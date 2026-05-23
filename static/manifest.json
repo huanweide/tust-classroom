@@ -1,7 +1,7 @@
 {
     "name": "TUST 空闲教室",
     "short_name": "空闲教室",
-    "start_url": "/",
+    "start_url": "./",
     "display": "standalone",
     "background_color": "#f0f2f5",
     "theme_color": "#0891B2",
