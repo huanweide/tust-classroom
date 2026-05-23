@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TUST 空闲教室</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0891B2">
+<meta name="description" content="天津科技大学空闲教室查询 — 泰达/河西双校区，实时查看教室占用情况">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #0891B2; --primary-hover: #0E7490; --primary-light: #ECFEFF; --primary-border: #A5F3FC;
+  --green: #22C55E; --green-bg: #F0FDF4; --green-border: #BBF7D0;
+  --red: #EF4444; --red-bg: #FEF2F2; --red-border: #FECACA;
+  --bg: #F8FAFC; --card: #FFFFFF; --text: #0F172A; --text-secondary: #475569; --text-muted: #64748B;
+  --border: #E2E8F0;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07);
+  --radius: 12px; --radius-sm: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg); color: var(--text); padding: 16px; padding-bottom: 40px;
+  -webkit-font-smoothing: antialiased; touch-action: manipulation; overscroll-behavior: contain;
+}
+.container { max-width: 640px; margin: 0 auto; }
+
+/* Header */
+.header { text-align: center; padding: 20px 0 8px; }
+.header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+.header .subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+/* Card */
+.card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); }
+
+/* Labels */
+label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+
+/* Select & Input */
+select, input[type="text"] {
+  width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 15px; font-family: inherit; background: var(--bg); color: var(--text);
+  -webkit-appearance: none; appearance: none;
+}
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+input[type="text"]:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(8,145,178,0.1); }
+
+/* Date Navigation */
+.date-nav { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; overflow: hidden; }
+.date-nav-arrow {
+  flex-shrink: 0; width: 32px; height: 40px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--card); color: var(--text-secondary); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.date-nav-arrow:hover { background: var(--primary-light); border-color: var(--primary-border); color: var(--primary); }
+.date-nav-today {
+  flex-shrink: 0; height: 40px; padding: 0 10px; border: 1px solid var(--primary-border); border-radius: var(--radius-sm);
+  background: var(--primary-light); color: var(--primary); font-size: 12px; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: all 0.15s;
+}
+.date-nav-today:hover { background: #CFFAFE; }
+.date-scroll {
+  flex: 1; display: flex; gap: 4px; overflow-x: auto; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; padding: 2px 0;
+}
+.date-scroll::-webkit-scrollbar { display: none; }
+.date-chip {
+  flex-shrink: 0; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  font-size: 12px; font-weight: 500; cursor: pointer; text-align: center; line-height: 1.3;
+  transition: all 0.15s; min-width: 52px; background: var(--card); color: var(--text-secondary);
+  user-select: none; white-space: nowrap;
+}
+.date-chip:hover { border-color: var(--primary-border); background: var(--primary-light); }
+.date-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; }
+.date-chip .day-label { font-size: 10px; opacity: 0.8; }
+
+/* Buttons */
+.btn-primary {
+  width: 100%; padding: 13px; background: var(--primary); color: #fff; border: none;
+  border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; cursor: pointer;
+  margin-top: 14px; transition: background 0.15s, transform 0.1s;
+}
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { background: #94A3B8; cursor: not-allowed; }
+
+/* Mode Toggle */
+.toggle-row { display: flex; gap: 4px; margin-bottom: 16px; background: var(--bg); border-radius: var(--radius-sm); padding: 3px; }
+.toggle-row button {
+  flex: 1; padding: 10px 6px; border: none; background: transparent; border-radius: 6px;
+  font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-muted); transition: all 0.15s;
+}
+.toggle-row button.active { background: var(--card); color: var(--primary); font-weight: 600; box-shadow: var(--shadow-sm); }
+
+/* Result cards */
+.result-card { background: var(--primary-light); border: 1px solid var(--primary-border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
+.room-name { font-size: 17px; font-weight: 700; color: var(--text); }
+.room-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.room-count { font-size: 13px; color: var(--primary); font-weight: 600; margin-top: 6px; }
+.room-list { font-size: 14px; color: var(--text-secondary); margin-top: 4px; line-height: 1.7; }
+
+/* Slot chips */
+.slot-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
+.slot-chip {
+  width: 30px; height: 26px; border-radius: 5px; display: flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.slot-chip.free { background: var(--green-bg); color: #15803D; border: 1px solid var(--green-border); }
+.slot-chip.busy { background: var(--red-bg); color: #DC2626; border: 1px solid var(--red-border); }
+
+/* Detail cards */
+.detail-card { border-radius: var(--radius-sm); padding: 12px; margin-top: 10px; }
+.detail-card.free { background: var(--green-bg); border: 1px solid var(--green-border); }
+.detail-card.busy { background: var(--red-bg); border: 1px solid var(--red-border); }
+.detail-head { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.period-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.period-tag { padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; }
+.period-tag.free { background: #fff; color: #15803D; }
+.period-tag.busy { background: #fff; color: #DC2626; }
+
+/* Empty/Loading states */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.5; }
+.empty-title { font-size: 15px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+.empty-desc { font-size: 13px; }
+.skeleton { background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; height: 60px; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* Suggestions */
+.suggest-hint { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.suggest-chip {
+  display: inline-block; padding: 6px 12px; margin: 3px; background: var(--primary-light);
+  border: 1px solid var(--primary-border); border-radius: var(--radius-sm); font-size: 14px;
+  font-weight: 500; color: var(--primary); cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.suggest-chip:hover { background: #CFFAFE; transform: translateY(-1px); }
+.suggest-chip small { color: var(--text-muted); font-weight: 400; margin-left: 2px; }
+
+/* Row layout */
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+/* Footer */
+.footer { text-align: center; padding: 24px 16px 8px; font-size: 12px; color: var(--text-muted); line-height: 1.8; }
+.footer a { color: var(--primary); text-decoration: none; font-weight: 500; }
+.footer a:hover { text-decoration: underline; }
+.footer .badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 10px 0; }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+  font-size: 11px; font-weight: 500; color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .row-2, .row-3 { grid-template-columns: 1fr; }
+  body { padding: 10px; }
+  .card { padding: 14px; }
+  .date-chip { padding: 6px 8px; font-size: 11px; min-width: 44px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>TUST 空闲教室</h1>
+    <div class="subtitle">天津科技大学 · 泰达 + 河西 · <span id="update-time">加载中...</span></div>
+  </div>
+
+  <!-- Campus -->
+  <div class="card">
+    <label>校区</label>
+    <select id="sel-campus"></select>
+  </div>
+
+  <!-- Date Navigation -->
+  <div class="card">
+    <label>日期</label>
+    <div class="date-nav">
+      <button class="date-nav-arrow" onclick="shiftDate(-1)" title="前一天">◀</button>
+      <button class="date-nav-today" onclick="goToday()">今天</button>
+      <div class="date-scroll" id="date-scroll"></div>
+      <button class="date-nav-arrow" onclick="shiftDate(1)" title="后一天">▶</button>
+    </div>
+  </div>
+
+  <!-- Mode Toggle -->
+  <div class="toggle-row">
+    <button id="btn-room" class="active" onclick="switchMode('room')">按节次查空闲</button>
+    <button id="btn-range" onclick="switchMode('range')">时间范围查空闲</button>
+    <button id="btn-classroom" onclick="switchMode('classroom')">查教室空闲时段</button>
+  </div>
+
+  <!-- Panel 1: By Period -->
+  <div id="panel-room">
+    <div class="card">
+      <label>教学楼</label>
+      <select id="sel-building-room"><option>全部</option></select>
+    </div>
+    <div class="card">
+      <label>节次</label>
+      <select id="sel-period"></select>
+      <button class="btn-primary" onclick="queryFreeRooms()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-4px;margin-right:6px;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>查空闲教室
+      </button>
+    </div>
+  </div>
+
+  <!-- Panel 2: By Range -->
+  <div id="panel-range" style="display:none">
+    <div class="card">
+      <label>教学楼（可选）</label>
+      <select id="sel-building-range"><option value="">全部</option></select>
+    </div>
+    <div class="card">
+      <label>时间范围</label>
+      <div class="row-2">
+        <div><label style="font-weight:400;font-size:12px;">起始节次</label><select id="sel-start"></select></div>
+        <div><label style="font-weight:400;font-size:12px;">结束节次</label><select id="sel-end"></select></div>
+      </div>
+      <button class="btn-primary" onclick="queryFreeRange()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-4px;margin-right:6px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>查连续空闲
+      </button>
+    </div>
+  </div>
+
+  <!-- Panel 3: Classroom Slots -->
+  <div id="panel-classroom" style="display:none">
+    <div class="card">
+      <label>教室名称</label>
+      <input type="text" id="inp-classroom" placeholder="如 9-516、101(d)" list="classroom-suggestions" autocomplete="off">
+      <datalist id="classroom-suggestions"></datalist>
+      <button class="btn-primary" onclick="queryClassroomSlots()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-4px;margin-right:6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>查空闲时段
+      </button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results"></div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="badges">
+      <span class="badge">📡 数据来源：URP教务系统</span>
+      <span class="badge">🔄 每周自动更新</span>
+      <span class="badge">📱 PWA 可安装</span>
+    </div>
+    <div style="margin-top:8px;">
+      数据更新于 <span id="footer-update">--</span> ·
+      <a href="https://github.com/huanweide/tust-classroom" target="_blank">GitHub</a> ·
+      <a href="https://github.com/huanweide/tust-classroom/archive/gh-pages.zip">下载离线版</a>
+    </div>
+    <div style="margin-top:6px;opacity:0.7;">
+      天津科技大学 空闲教室查询系统 · 泰达 & 河西 · 非官方
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// Static Data Layer
+// ═══════════════════════════════════════
+const DATA = 'data/';
+let index = null;         // index.json
+let dateCache = {};       // date → room data
+let searchIdx = null;     // search index
+let selDate = '';         // currently selected date YYYY-MM-DD
+let mode = 'room';
+
+// Chinese weekday labels
+const WDAY = ['日','一','二','三','四','五','六'];
+
+// Helpers
+function R(html) { document.getElementById('results').innerHTML = html; }
+function L() { return '<div class="skeleton"></div>'; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// SVG Icons (inline, no emoji)
+const ICONS = {
+  empty: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>',
+  error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+};
+
+// ═══════════════════════════════════════
+// Init
+// ═══════════════════════════════════════
+async function init() {
+  try {
+    const resp = await fetch(DATA + 'index.json');
+    index = await resp.json();
+  } catch (e) {
+    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">无法读取数据，请检查网络连接</div></div>`);
+    return;
+  }
+
+  // Campus selector
+  document.getElementById('sel-campus').innerHTML =
+    index.campuses.map(c => `<option>${c}</option>`).join('');
+  document.getElementById('sel-campus').onchange = onCampusChange;
+
+  // Period selectors
+  const periodOpts = Object.entries(index.periods).map(([p, t]) =>
+    `<option value="${p}">第${p}节 ${t}</option>`
+  ).join('');
+  document.getElementById('sel-period').innerHTML = periodOpts;
+  document.getElementById('sel-start').innerHTML = periodOpts;
+  document.getElementById('sel-end').innerHTML = periodOpts;
+  const lastP = Object.keys(index.periods).pop();
+  document.getElementById('sel-end').value = lastP;
+
+  // Update time
+  document.getElementById('update-time').textContent = '更新于 ' + index.updated;
+  document.getElementById('footer-update').textContent = index.updated;
+
+  // Date navigation
+  buildDateNav();
+  goToday();
+
+  // Load buildings for default campus
+  await onCampusChange();
+
+  // Autocomplete
+  document.getElementById('inp-classroom').oninput = function() {
+    clearTimeout(this._acTimer);
+    const q = this.value.trim();
+    if (q.length < 1) return;
+    this._acTimer = setTimeout(() => autoComplete(q), 300);
+  };
+}
+
+// ═══════════════════════════════════════
+// Date Navigation
+// ═══════════════════════════════════════
+function buildDateNav() {
+  const scroll = document.getElementById('date-scroll');
+  scroll.innerHTML = index.dates.map(d => {
+    const dt = new Date(d + 'T00:00:00');
+    const mmdd = `${dt.getMonth()+1}/${dt.getDate()}`;
+    const wd = WDAY[dt.getDay()];
+    return `<div class="date-chip" data-date="${d}" onclick="pickDate('${d}')">
+      <div>${mmdd}</div><div class="day-label">${wd}</div>
+    </div>`;
+  }).join('');
+}
+
+function pickDate(d) {
+  selDate = d;
+  document.querySelectorAll('.date-chip').forEach(el => {
+    el.classList.toggle('active', el.dataset.date === d);
+  });
+  // Scroll into view
+  const chip = document.querySelector(`.date-chip[data-date="${d}"]`);
+  if (chip) chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+function shiftDate(dir) {
+  const idx = index.dates.indexOf(selDate);
+  if (idx < 0) return;
+  const newIdx = Math.max(0, Math.min(index.dates.length - 1, idx + dir));
+  pickDate(index.dates[newIdx]);
+}
+
+function goToday() {
+  const today = new Date().toISOString().slice(0, 10);
+  if (index.dates.includes(today)) {
+    pickDate(today);
+  } else {
+    // Pick closest available date (first date in index)
+    pickDate(index.dates[0]);
+  }
+}
+
+// ═══════════════════════════════════════
+// Data Loading
+// ═══════════════════════════════════════
+async function loadDate(d) {
+  if (dateCache[d]) return dateCache[d];
+  const resp = await fetch(DATA + d + '.json');
+  if (!resp.ok) return null;
+  const data = await resp.json();
+  dateCache[d] = data;
+  return data;
+}
+
+async function loadSearch() {
+  if (searchIdx) return searchIdx;
+  const resp = await fetch(DATA + 'search.json');
+  searchIdx = await resp.json();
+  return searchIdx;
+}
+
+function getPeriods() {
+  return Object.keys(index.periods).map(Number);
+}
+
+// ═══════════════════════════════════════
+// Building Selector
+// ═══════════════════════════════════════
+async function onCampusChange() {
+  const campus = document.getElementById('sel-campus').value;
+  const blds = index.buildings[campus] || [];
+  const opts = blds.map(b => `<option>${b}</option>`).join('');
+  document.getElementById('sel-building-room').innerHTML = '<option value="">全部</option>' + opts;
+  document.getElementById('sel-building-range').innerHTML = '<option value="">全部</option>' + opts;
+}
+
+// ═══════════════════════════════════════
+// Mode Switch
+// ═══════════════════════════════════════
+function switchMode(m) {
+  mode = m;
+  document.querySelectorAll('.toggle-row button').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + m).classList.add('active');
+  ['room','range','classroom'].forEach(x => {
+    document.getElementById('panel-' + x).style.display = x === m ? '' : 'none';
+  });
+  R('');
+}
+
+// ═══════════════════════════════════════
+// Autocomplete
+// ═══════════════════════════════════════
+async function autoComplete(q) {
+  const campus = document.getElementById('sel-campus').value;
+  const sidx = await loadSearch();
+  const ql = q.toLowerCase();
+  // Exact match first, then contains, then building prefix match
+  let results = sidx.filter(r => r.r === q && r.c === campus);
+  if (results.length < 5) {
+    const contains = sidx.filter(r => r.r.toLowerCase().includes(ql) && r.c === campus && !results.includes(r));
+    results = results.concat(contains);
+  }
+  // Smart decompose: "9-12" → building "9-" + room "12"
+  const m = q.match(/^(\d+)[-—](\d+.*)$/);
+  if (m && results.length < 8) {
+    const bldPrefix = m[1], roomPart = m[2].toLowerCase();
+    const smart = sidx.filter(r =>
+      r.c === campus && (r.b.startsWith(bldPrefix + '-') || r.b.includes(bldPrefix)) &&
+      r.r.toLowerCase().includes(roomPart) && !results.includes(r)
+    );
+    results = results.concat(smart);
+  }
+  const dl = document.getElementById('classroom-suggestions');
+  dl.innerHTML = results.slice(0, 10).map(r =>
+    `<option value="${esc(r.r)}">${esc(r.b)} — ${esc(r.c)}</option>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════
+// Search Suggestions (for not-found fallback)
+// ═══════════════════════════════════════
+async function searchSuggestions(name, campus) {
+  const sidx = await loadSearch();
+  const nl = name.toLowerCase();
+  let results = sidx.filter(r => r.r.toLowerCase().includes(nl) && r.c === campus);
+  const m = name.match(/^(\d+)[-—](\d+.*)$/);
+  if (m) {
+    const bp = m[1], rp = m[2].toLowerCase();
+    const smart = sidx.filter(r =>
+      r.c === campus && (r.b.startsWith(bp + '-') || r.b.includes(bp)) &&
+      r.r.toLowerCase().includes(rp) && !results.includes(r)
+    );
+    results = results.concat(smart);
+  }
+  return results.slice(0, 8);
+}
+
+// ═══════════════════════════════════════
+// Mode 1: Free Rooms by Period
+// ═══════════════════════════════════════
+async function queryFreeRooms() {
+  if (!selDate) { R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">请选择日期</div></div>`); return; }
+  const campus = document.getElementById('sel-campus').value;
+  const period = parseInt(document.getElementById('sel-period').value);
+  const building = document.getElementById('sel-building-room').value;
+
+  R(L());
+  try {
+    const data = await loadDate(selDate);
+    if (!data || !data[campus]) {
+      R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">${selDate} 暂无数据</div></div>`);
+      return;
+    }
+
+    // Collect free rooms for this period
+    const groups = {};
+    for (const [bld, rooms] of Object.entries(data[campus])) {
+      if (building && bld !== building) continue;
+      const free = Object.entries(rooms).filter(([_, periods]) => periods.includes(period)).map(([rn, _]) => rn);
+      if (free.length) groups[bld] = free;
+    }
+
+    const total = Object.values(groups).reduce((s, r) => s + r.length, 0);
+    if (!total) {
+      R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">第${period}节无空闲教室</div><div class="empty-desc">${selDate} · ${campus}校区 · ${building || '全部'}</div></div>`);
+      return;
+    }
+
+    let html = '';
+    for (const [bld, rooms] of Object.entries(groups)) {
+      html += `<div class="result-card">
+        <div class="room-name">${esc(bld)}</div>
+        <div class="room-count">${rooms.length} 间空闲</div>
+        <div class="room-list">${rooms.map(r => esc(r)).join('、')}</div>
+      </div>`;
+    }
+    R(html);
+  } catch (e) {
+    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">${esc(e.message)}</div></div>`);
+  }
+}
+
+// ═══════════════════════════════════════
+// Mode 2: Continuously Free Rooms
+// ═══════════════════════════════════════
+async function queryFreeRange() {
+  if (!selDate) { R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">请选择日期</div></div>`); return; }
+  const campus = document.getElementById('sel-campus').value;
+  const start = parseInt(document.getElementById('sel-start').value);
+  const end = parseInt(document.getElementById('sel-end').value);
+  const building = document.getElementById('sel-building-range').value;
+
+  if (start > end) {
+    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">起始节次不能大于结束节次</div></div>`);
+    return;
+  }
+
+  R(L());
+  try {
+    const data = await loadDate(selDate);
+    if (!data || !data[campus]) {
+      R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">${selDate} 暂无数据</div></div>`);
+      return;
+    }
+
+    const range = [];
+    for (let p = start; p <= end; p++) range.push(p);
+    const results = [];
+
+    for (const [bld, rooms] of Object.entries(data[campus])) {
+      if (building && bld !== building) continue;
+      const bldResults = [];
+      for (const [rn, periods] of Object.entries(rooms)) {
+        if (range.every(p => periods.includes(p))) {
+          bldResults.push(rn);
+        }
+      }
+      if (bldResults.length) results.push({ building: bld, rooms: bldResults });
+    }
+
+    const total = results.reduce((s, r) => s + r.rooms.length, 0);
+    if (!total) {
+      R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">第${start}-${end}节无连续空闲教室</div><div class="empty-desc">${selDate} · ${campus}校区</div></div>`);
+      return;
+    }
+
+    let html = '';
+    for (const r of results) {
+      html += `<div class="result-card">
+        <div class="room-name">${esc(r.building)}</div>
+        <div class="room-count">${r.rooms.length} 间连续空闲</div>
+        <div class="room-list">${r.rooms.map(rn => esc(rn)).join('、')}</div>
+      </div>`;
+    }
+    R(html);
+  } catch (e) {
+    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">${esc(e.message)}</div></div>`);
+  }
+}
+
+// ═══════════════════════════════════════
+// Mode 3: Classroom Slot Check
+// ═══════════════════════════════════════
+async function queryClassroomSlots() {
+  if (!selDate) { R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">请选择日期</div></div>`); return; }
+  const campus = document.getElementById('sel-campus').value;
+  const name = document.getElementById('inp-classroom').value.trim();
+  if (!name) {
+    R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">请输入教室名称</div></div>`);
+    return;
+  }
+
+  R(L());
+  try {
+    const data = await loadDate(selDate);
+    if (!data || !data[campus]) {
+      R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">${selDate} 暂无数据</div></div>`);
+      return;
+    }
+
+    // Find exact match
+    let foundBld = null, foundPeriods = [];
+    for (const [bld, rooms] of Object.entries(data[campus])) {
+      if (rooms[name]) {
+        foundBld = bld;
+        foundPeriods = rooms[name];
+        break;
+      }
+    }
+
+    if (!foundBld) {
+      // Search for suggestions
+      const sug = await searchSuggestions(name, campus);
+      let html = `<div class="empty-state">${ICONS.error}<div class="empty-title">找不到 "${esc(name)}"</div><div class="empty-desc">名称不完全匹配</div></div>`;
+      if (sug.length) {
+        html += `<div style="margin-top:12px;"><div class="suggest-hint">是不是想找这些？点击可查：</div>`;
+        for (const s of sug) {
+          html += `<span class="suggest-chip" onclick="document.getElementById('inp-classroom').value='${esc(s.r)}';queryClassroomSlots();">${esc(s.r)}<small> ${esc(s.b)}</small></span>`;
+        }
+        html += `</div>`;
+      }
+      R(html);
+      return;
+    }
+
+    const allPeriods = getPeriods();
+    const freeSet = new Set(foundPeriods);
+    const totalPeriods = allPeriods.length;
+
+    // Slot chips
+    let chips = '';
+    for (const p of allPeriods) {
+      chips += `<span class="slot-chip ${freeSet.has(p) ? 'free' : 'busy'}">${p}</span>`;
+    }
+
+    let html = `<div class="result-card">
+      <div class="room-name">${esc(name)}</div>
+      <div class="room-sub">${esc(selDate)} · ${esc(campus)}校区 · ${esc(foundBld)}</div>
+      <div class="slot-bar">${chips}</div>
+    </div>`;
+
+    const freeList = allPeriods.filter(p => freeSet.has(p));
+    const busyList = allPeriods.filter(p => !freeSet.has(p));
+
+    if (freeList.length) {
+      html += `<div class="detail-card free">
+        <div class="detail-head" style="color:#15803D;">空闲 (${freeList.length}/${totalPeriods})</div>
+        <div class="period-tags">
+          ${freeList.map(p => `<span class="period-tag free">第${p}节 ${index.periods[p]}</span>`).join('')}
+        </div>
+      </div>`;
+    }
+    if (busyList.length) {
+      html += `<div class="detail-card busy">
+        <div class="detail-head" style="color:#DC2626;">占用 (${busyList.length}/${totalPeriods})</div>
+        <div class="period-tags">
+          ${busyList.map(p => `<span class="period-tag busy">第${p}节 ${index.periods[p]}</span>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    R(html);
+  } catch (e) {
+    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">${esc(e.message)}</div></div>`);
+  }
+}
+
+// ═══════════════════════════════════════
+// Service Worker
+// ═══════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
+init();
+</script>
+</body>
+</html>
