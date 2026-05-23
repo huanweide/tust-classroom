@@ -1,0 +1,508 @@
+<!DOCTYPE html><html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/><meta name="viewport" content="width=device-width,initial-scale=0.8, minimum-scale=0.8, maximum-scale=1.0, user-scalable=no" /><meta name="renderer" content="webkit"><title>统一身份认证</title>
+    <link rel="stylesheet" type="text/css" href="/authserver/cusMobTheme/static/custom/css/login.css?v=20260128.142526" /><link rel="stylesheet" type="text/css" href="/authserver/cusMobTheme/static/custom/css/content-base.css?v=20260128.142526" /><script type="text/javascript" src="/authserver/cusMobTheme/static/common/jquery-latest.min.js?v=20260128.142526"></script>
+	<script type="text/javascript" src="/authserver/cusMobTheme/static/common/common-header.js?v=20260128.142526"></script>
+    <script type="text/javascript">
+	    var contextPath = "/authserver";
+	</script>
+<link rel="stylesheet" type="text/css" href="/authserver/cusMobTheme/static/css/bootstrap.min.css?v=20260128.142526" /><link rel="stylesheet" type="text/css" href="/authserver/cusMobTheme/static/custom/css/improveUserInfo.css?v=20260128.142526"><link rel="stylesheet" href="/authserver/cusMobTheme/static/custom/css/reauth.css?v=20260128.142526"><link rel="stylesheet" href="/authserver/cusMobTheme/static/custom/css/otp.css?v=20260128.142526"><link rel="stylesheet" href="/authserver/cusMobTheme/static/custom/css/commonPcAndH5.css?v=20260128.142526"><script type="text/javascript" src="/authserver/cusMobTheme/static/common/jquery-latest.min.js?v=20260128.142526"></script>
+	<script type="text/javascript" src="/authserver/cusMobTheme/static/js/plugin/popper.min.js?v=20260128.142526"></script>
+	<script type="text/javascript" src="/authserver/cusMobTheme/static/js/plugin/bootstrap-4.4.1.min.js?v=20260128.142526"></script>
+	<script type="text/javascript" src="/authserver/cusMobTheme/static/common/utils.js?v=20260128.142526"></script>
+	<script type="text/javascript" src="/authserver/cusMobTheme/static/common/encrypt.js?v=20260128.142526"></script>
+    <script type="text/javascript" src="/authserver/cusMobTheme/static/custom/js/reAuth.js?v=20260128.142526"></script>
+	<script type="text/javascript" src="/authserver/cusMobTheme/static/custom/js/qrcodeMfa.js?v=20260128.142526"></script>
+    <script type="text/javascript" src="/authserver/cusMobTheme/static/custom/js/faceAuth.js?v=20260128.142526"></script>
+	<script type="text/javascript" src="/authserver/cusMobTheme/static/common/vue.min.js?v=20260128.142526"></script>
+	
+<script>
+	var contextPath = "\/authserver";
+    var serverPrefix = "https:\/\/id.tust.edu.cn\/authserver";
+	var reAuthParams = {
+		"isSleepAccount": "0",
+		"reAuthDec0":"\u4F60\u5373\u5C06\u8BBF\u95EE\u65B0\u6559\u52A1-\u5B66\u751F\u7EAF\u57DF\u540D\n\uFF0C\u60A8\u8BBE\u7F6E\u4E86\u8BE5\u7CFB\u7EDF\u9700\u8981\u4E8C\u6B21\u8BA4\u8BC1\uFF0C",
+		"reAuthDec1":"\u4F60\u5373\u5C06\u8BBF\u95EE\u65B0\u6559\u52A1-\u5B66\u751F\u7EAF\u57DF\u540D\n\uFF0C\u975E\u5E38\u7528\u5730\u70B9\u767B\u5F55\u9700\u8981\u4E8C\u6B21\u8BA4\u8BC1\uFF0C",
+		"reAuthDec2":"\u8BF7\u8F93\u5165 <span class=\"color-dark-weight-title\">\u8BA4\u8BC1\u5BC6\u7801<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec3":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">\u77ED\u4FE1\u9A8C\u8BC1\u7801<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec4":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">\u4F01\u4E1A\u53F7\u63A5\u6536\u5230\u7684\u9A8C\u8BC1\u7801<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec5":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">\u4ECA\u65E5\u6821\u56ED\u63A5\u6536\u5230\u7684\u9A8C\u8BC1\u7801<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec6":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">\u5B9E\u4EBA\u8BA4\u8BC1<\/span> \u65B9\u5F0F\u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec7":"\u8BF7 <span class=\"color-dark-weight-title\">\u56DE\u7B54\u5B89\u5168\u95EE\u9898<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec8":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">\u5FAE\u4FE1\u626B\u7801<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec9":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">QQ\u626B\u7801<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec10":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">\u5B89\u5168\u4EE4\u724C<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec11":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">\u90AE\u7BB1\u63A5\u6536\u5230\u7684\u9A8C\u8BC1\u7801<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec12":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">\u9489\u9489\u63A5\u6536\u5230\u7684\u9A8C\u8BC1\u7801<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec13":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">WeLink\u63A5\u6536\u5230\u7684\u9A8C\u8BC1\u7801<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDec14":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">\u9489\u9489\/\u4F01\u4E1A\u5FAE\u4FE1\/weLink\u626B\u7801<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthDecUKey":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">CA Ukey<\/span> \u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"reAuthOtpDec1":"<div class=\"pre-point\"><\/div><span>\u5FAE\u4FE1\u6253\u5F00\u201C\u6570\u76FEOTP\u201D\u5C0F\u7A0B\u5E8F\uFF0C\u67E5\u770B\u5E76\u8F93\u5165\u4EE4\u724C\uFF0C\u5B8C\u6210\u6821\u9A8C\u3002<\/span>",
+		"reAuthOtpDec2":"<div class=\"pre-point\"><\/div><span style=color:#FF7D00>\u5FAE\u4FE1\u6253\u5F00\u201C\u6570\u76FEOTP\u201D\u5C0F\u7A0B\u5E8F\uFF0C\u4F7F\u7528\u626B\u7801\u529F\u80FD\u83B7\u53D6\u4EE4\u724C\u7801\u3002<span class=otp_reauth_bind_guide>\u67E5\u770B\u6307\u5357<\/span><\/span>",
+		"reAuthDec18":"\u8BF7\u4F7F\u7528 <span class=\"color-dark-weight-title\">\u817E\u8BAF\u4E91\u4EBA\u8138\u6838\u8EAB<\/span> \u65B9\u5F0F\u8FDB\u884C\u518D\u6B21\u8BA4\u8BC1",
+		"faceAuthDec18":"\u8BF7\u4F7F\u7528\u5FAE\u4FE1APP\u626B\u7801\u8BA4\u8BC1",
+		"faceAuthDec6":"\u8BF7\u4F7F\u7528\u652F\u4ED8\u5B9DAPP\u626B\u7801\u8BA4\u8BC1",
+		"faceAuthName":"\u5B9E\u4EBA\u8BA4\u8BC1",
+		"optionalValidTip":null,
+
+		"reAuthType":"3",
+		"isMultifactor":"true",
+		"_isBindOtp":null,
+		"_otpUrl":null,
+		"ipAnomaly":0,
+		"service":"http:\/\/jwxtxs.tust.edu.cn:46110\/j_spring_cas_security_check",
+		"reAuthUserId":"25033203",
+		"pwdEncryptSalt":"j4NgZghVb31JeyMS",
+		"otpCodeRequired":"\u8BF7\u8F93\u51656\u4F4D\u6709\u6548\u7684\u5B89\u5168\u4EE4\u724C",
+		"otpUnbindPhone":"\u6682\u65E0\u53EF\u7528\u9A8C\u8BC1\u65B9\u5F0F\uFF0C\u8BF7\u8054\u7CFB\u7BA1\u7406\u5458",
+		"userNameEmpty":"\u8BF7\u8F93\u5165\u7528\u6237\u540D",
+		"passwordEmpty":"\u8BF7\u8F93\u5165\u5BC6\u7801",
+		"dynamicEmpty":"\u8BF7\u8F93\u5165\u9A8C\u8BC1\u7801",
+		"answerEmpty":"\u8BF7\u8F93\u5165\u7B54\u6848",
+		"getCodeName":"\u83B7\u53D6\u9A8C\u8BC1\u7801",
+		"requestTimeOut":"\u8BF7\u6C42\u8D85\u65F6\uFF0C\u8BF7\u5237\u65B0\u540E\u91CD\u65B0\u64CD\u4F5C"
+	};
+	</script>
+</head>
+<body id="bg">
+<header>
+	<div class="re_auth_content">
+		<div class="re_auth_logo_title_box">
+			<div  class="re_auth_logo_box">
+				<img id="logo" alt="" class="re_auth_logo"/></div>
+			<span class="header-title">统一身份认证</span>
+		</div>
+		<div>
+			<a id="logoutA" href="/authserver/logout" title="安全退出" class="goLogin lang_text_ellipsis1">
+				<img src="/authserver/cusMobTheme/static/custom/images/logout_icon.png" class="logout-icon" /><span  class="drop_ellipsis">安全退出</span>
+			</a>
+		</div>
+	</div>
+</header>
+<div class="auth_content_wrapper">
+	<div class="auth_content_box">
+		<div class="left-bg">
+			<div class="left-bg-header">
+				<span class="">你好，樊斯瑞</span>
+<!--				<span th:utext="${reAuthUserName}"></span>--></div>
+			<div class="left-text-box">
+				<div class="pre-point"></div>
+				<span>你本次登录为非可信客户端登录，需完成多因子认证</span>
+			</div>
+			<div id = "optionalValidTipId" class="left-text-box">
+				<div class="pre-point"></div>
+				<span>当前应用校验属于用户可选行为，若无需校验，可前往 个人中心/偏好设置 中取消</span>
+			</div>
+			<div class="left-text-box">
+				<div class="pre-point"></div>
+				<span id="reAuthDec"></span>
+			</div>
+			<div class="left-text-box" id="reAuthOtpDec">
+			</div>
+			<div class="opt-img-box" id="otpBindDiv" >
+				<img src="" id="otpBindImg" style="width: 138px;height: 138px;"></div>
+			<!-- 背景圆圈 --><img src="/authserver/cusMobTheme/static/custom/images/reauth-left-bg.png" class="left-bg-ring"/></div>
+		<div class="wrap-ge">
+			<div class="wrap-ge-header">
+				<span class="right-header-title">多因子认证</span>
+				<div>
+					<div class="dropdown">
+						<span class="color-dark-blue-title" style="word-break: break-all;background-color: rgb(255 255 255 / 0%);">短信验证码</span>
+					</div>
+				</div>
+			</div>
+			<div class="reauth-right-content-box">
+				<!-- 密码登录、手机动态码、企业微信动态码、今日校园动态码 --><div id="userNameDiv" style="display: none">
+					<div class="form_min_group">
+						<!--<i class="auth_icon auth_icon_user"></i>--><div class="input-title">用户名</div>
+						<input id="username" name="username" value="樊斯瑞(189****7333)" class="input-box" title="樊斯瑞(189****7333)" disabled style="opacity: 0.5;"/></div>
+					<div id="pwdType" style="display: none;margin-bottom:0px;" class="form_min_group">
+                        <div class="input-title">密码</div>
+						<input type="password" style="display: none" disabled autocomplete="off" /><input type="text" id="password" autocomplete="off" placeholder="请输入" class="input-box" maxlength="20" onfocus="this.type='password'" /><input type="hidden" id="passwordEncrypt" name="password"><div class="reauth_error"></div>
+					</div>
+					<div id="dynamicType" style="display: none;margin-bottom:0px;" class="form_min_group">
+						<!--<i class="auth_icon auth_icon_pwd"></i>--><div class="input-title" id="dynamicTypeTitle">验证码</div>
+						<input id="dynamicCode" type="text" class="input-box" name="dynamicCode" placeholder="请输入" maxlength="20"/><button id="getDynamicCode" title="获取验证码" class="dynamicCode_btn auth_login_btn" onclick="sendDynamicCodeByPhone(this)">获取验证码</button>
+						<div class="reauth_error"></div>
+					</div>
+					<div class="form_min_group">
+						<div class="reauth_error_submit"></div>
+						<button id="reAuthSubmitBtn" class="auth_login_btn submit_btn">登录</button>
+					</div>
+				</div>
+				<!-- 支付宝人脸认证 --><div id="aliFaceDiv" style="display: none">
+					<div class="scan_box">
+						<div id="qr_code">
+							<div class="qr_img_div">
+								<img id="qr_img" src="" style="margin: 5px;width:150px"/><div id="qr_success" style="display: none">
+									<div style="text-align:center;margin: 30px auto 0px">
+										<img src="/authserver/cusMobTheme/static/custom/images/success_qr.png" width="35px" class="scan_success_img"/><br/><div class="title title_h1">扫描成功</div>
+									</div>
+									<div style="text-align:center;margin-top:16px"><a class="scan_a" href="javascript:backQrCode();">返回二维码</a></div>
+								</div>
+								<div id="qr_invalid" style="display: none">
+									<div style="text-align:center;margin: 30px auto 0px">
+										<img id="qr_refresh" width="35px" src="/authserver/cusMobTheme/static/custom/images/invalid_qr.png" class="scan_invalid_icon"/><br/><div class="title title_h1">二维码已失效</div>
+									</div>
+									<div style="text-align:center;margin-top:16px"><a class="scan_a" href="javascript:refresh();">刷新二维码</a></div>
+								</div>
+							</div>
+							<div class="reauth_error_faceAuth form_min_group"></div>
+							<div class="faceAuth_dec" id="faceAuth_dec">请使用支付宝APP扫码认证</div>
+						</div>
+						<input type="hidden" name="uuid" id="uuid" value=""/><input type="hidden" id="reAuthTypeNameDesc" value="请使用微信APP扫码认证"/><input type="hidden" name="pluginId" id="pluginId" value="REAL_PERSON_PLUGIN_ALI_PAY"/></div>
+				</div>
+				<!-- 钉钉/企业微信/WeLink扫码 --><div id="dingTalkWeChatWorkWeLinkQrCodeDiv" style="display: none">
+					<div class="scan_box">
+						<div id="mfa_qr_code">
+							<div class="qr_img_div">
+								<img id="mfa_qr_img" src="" style="margin: 5px;width:150px"/></div>
+							<div class="reauth_error_faceAuth form_min_group"></div>
+							<div class="mfa_qrcode_dec">请使用 <span class="color-dark-weight-title">钉钉/企业微信/weLink扫码</span> 进行再次认证</div>
+						</div>
+
+						<div id="mfa_qr_success" style="display: none;margin-top: 100px">
+							<div style="text-align:center;margin: 35px auto 0px">
+								<img src="/authserver/cusMobTheme/static/custom/images/Success.png" width="64px" class="scan_success_img"/><br/><div class="title title_h1" style="margin-top: 20px;">扫描成功</div>
+								<div class="sub_title">请在手机上「确认登录」</div>
+							</div>
+							<!-- <div style="text-align:center"><a class="scan_a" href="javascript:refresh();" th:text="#{ids.qr.back}"></a></div> --></div>
+
+						<div id="mfa_qr_invalid" style="display: none;margin-top: 80px;">
+							<div style="text-align:center;">
+								<div style="position: relative;">
+									<img id="mfa_qr_refresh" width="58px"
+										 style="position: absolute;left: calc(50% - 25px); top: calc(50% - 15px);z-index: 30;cursor:pointer;"
+										 src="/authserver/cusMobTheme/static/custom/images/refresh.png"
+										 class="scan_invalid_icon"
+										 onclick="refreshMFAQrCode()"/><div style="position:absolute;width:160px;height:160px;background-color:rgba(0,0,0,0.5);margin-left: 27%;margin-top: 6%;z-index: 20;">
+
+									</div><br><img id="mfa_qr_img_invalid" src="" style="margin: 5px;width:150px"/></div>
+								<div id="mfa_qr_refresh_span" class="title" onclick="refreshMFAQrCode()" style="margin-top: 10px;">二维码已失效，点击刷新</div>
+							</div>
+						</div>
+						<div class="form_min_group">
+							<div class="reauth_error_submit" style="white-space: pre-wrap;text-align: center;"></div>
+						</div>
+						<input type="hidden" name="mfa_uuid" id="mfa_uuid" value=""/></div>
+				</div>
+				<div id="combinedWxDiv" style="display: none">
+					<div id="combinedWx" class="form_min_group" style="margin-top: 100px;text-align: center">
+						<img src="/authserver/cusMobTheme/static/web/images/weixin_new.png" /></div>
+					<div class="form_min_group" style="margin-top: 34px;text-align: center">
+						<button class="auth_login_btn" style="width: 124px" onclick="reAuthByCombined('weixin')">点击前往扫码</button>
+					</div>
+				</div>
+				<div id="combinedQqDiv" style="display: none">
+					<div id="combinedQq" class="form_min_group" style="margin-top: 100px;text-align: center">
+						<img src="/authserver/cusMobTheme/static/web/images/qq_new.png" /></div>
+					<div class="form_min_group" style="margin-top: 34px;text-align: center">
+						<button class="auth_login_btn"  style="width: 124px" onclick="reAuthByCombined('qq')">点击前往扫码</button>
+					</div>
+				</div>
+				<div id="caUkeyDiv" style="display: none">
+					<div>
+    <div class="form_min_group" style="margin-top: 70px;text-align: center">
+        <img src="/authserver/cusMobTheme/static/web/images/uKey-ca.png" style="width:150px;height:150px" /></div>
+    <div class="form_min_group" style="margin-top: 24px;text-align: center">
+        <button class="auth_login_btn"  style="width: 124px" onclick="ukeyLogin()">点击前往扫码</button>
+    </div>
+</div>
+				</div>
+				<div id="otpDiv" style="display: none">
+					<div class="sys-time-box">
+						<span>系统时间：</span>
+						<span id="clockTime"></span>
+						<div style="position: relative;margin-left: 16px">
+							<img id="otp_tips" class="icon-person" src="/authserver/cusMobTheme/static/custom/images/otp_icon.png"/><div class="otp_tips_content">
+								<span>若手机与服务器时钟误差超过30s，则会导致验证失败，需前往手机设置中校准时钟。</span>
+							</div>
+						</div>
+					</div>
+					<div class="pd-container">
+						<div class="checked-codes">
+							<div class="parentContent" id="bodyContent">
+								<div class="inputContent">
+									<div v-for="(item, index) in exchangeArr">
+										<input
+												type="number"
+												name="otpCode"
+												maxlength="1"
+												:class="{'inputCodeForOtp': true,'turnRed': !canSubmit && !exchangeArr[index]}"
+												:value="exchangeArr[index]"
+												:ref="index"
+												@keyup="function(e){ tabInput(e, index) }"
+												@keydown="function(e){ dealNumber(e, index) }"
+												onKeypress="return(/[\d]/.test(String.fromCharCode(event.keyCode))) "
+										></div>
+								</div>
+							</div>
+						</div>
+						<div class="reauth_error"></div>
+					</div>
+					<div class="form_min_group">
+						<div class="reauth_error_submit"></div>
+						<button id="reAuthSubmitBtn" class="auth_login_btn reAuth_login submit_btn">登录</button>
+					</div>
+					<div  id="otpCheckUserPhone" class="otp_info_tips">
+						<span  id="optUpdateInfoTips" style="cursor: pointer;" onclick="checkUserPhone();">未绑定或令牌已丢失</span>
+					</div>
+				</div>
+				<!-- 回答安全问题 --><div id="questionDiv" style="display: none">
+					<div class="form_min_group">
+						<div id="questionDiv1" class="reauth_question"></div>
+						<input id="answer1" type="text" class="reauth_answer" placeholder="请输入答案" maxlength="100"/></div>
+					<div class="form_min_group">
+						<div id="questionDiv2" class="reauth_question"></div>
+						<input id="answer2" type="text" class="reauth_answer" placeholder="请输入答案" maxlength="100"/></div>
+
+					<div class="form_min_group" style="margin-top:5px;">
+						<div class="reauth_error form_min_group"></div>
+						<button id="reAuthSubmitBtn" class="auth_login_btn reAuth_login submit_btn">登录</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- otp身份校验 --><div class="modal" id="otpCheckPhoneModal" tabindex="-1" aria-labelledby="otpCheckPhoneModalLabel" aria-hidden="true" style="background-color: rgba(0,0,0,0.5)">
+	<div class="modal-dialog modal-dialog-centered" id="otpCheckPhoneDialog" style="width: 428px;position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin-top: 0px !important;">
+			<div class="modal-content" style="min-height:300px">
+				<div class="modal-header">
+					<div id="otpCheckPhoneModalLabel">身份验证</div>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:-24px;opacity:unset;margin-bottom: 0;">
+							<img src="/authserver/cusMobTheme/static/custom/images/close.png" /></button>
+				</div>
+				<div class="modal-body" style="min-height:140px;width: 426px;padding: 20px;">
+					<div class="common-alert-box" style="margin-bottom: 20px;">
+						<img src="/authserver/cusMobTheme/static/custom/images/icon-tips-blue.png" class="common-tips-icon"><div>为了您的信息安全，需要进行身份认证</div>
+					</div>
+					<div id="otpValidRadioGroup" class="common-radio-group">
+						<div class="common-radio-group-label">验证方式</div>
+						<div class="common-radio-group-line">
+							<div id="phoneRadio" class="common-radio-group-item" onclick="handleChangeRadio(this)">
+								<div class="common-radio-icon">
+									<div class="common-radio-inner"></div>
+									<input type="radio" name="valid" value="phone" class="common-radio"></div>
+								<div class="common-radio-label common-ellipsis" title="短信">短信</div>
+							</div>
+							<div id="emailRadio" class="common-radio-group-item" onclick="handleChangeRadio(this)">
+								<div class="common-radio-icon">
+									<div class="common-radio-inner"></div>
+									<input type="radio" name="valid" value="email" class="common-radio"></div>
+								<div class="common-radio-label common-ellipsis" title="邮箱">邮箱</div>
+							</div>
+						</div>
+					</div>
+					<div id="validPhoneBox" class="otp-valid-content-box">
+						<div class="common-radio-group-label">手机号</div>
+						<div style="text-align: left;margin-bottom: 20px;display: flex;">
+							<div class="otp-vaild-left-phone">
+								<select id="countryCode_otp" name="countryCode" class="change-bind-phone-pre input-disabled" disabled>
+									<option id="countryCode_otp_option" value="" selected="selected"></option>
+								</select>
+								<div class="right-arrow"></div>
+							</div>
+							<input id="changePhone_otp" name="changePhone" class="change-bind-phone input-disabled only-input-number"  placeholder="请输入" value="" disabled/></div>
+						<div class="input-title-code">短信验证码</div>
+						<div style="text-align: left;display: flex;overflow: hidden;">
+							<input id="checkPhoneCode_otp" type='text' class="common-input" placeholder="请输入" onblur="handleBlurValidCode(event)" /><button id="getImprovePhoneCodeId_otp" class="common-plain-primary-btn otp-send-code-btn intercept_tips" onclick="getReAuthOtpPhoneCode(this)" title="获取验证码" style="flex-shrink: 0;">获取验证码</button>
+						</div>
+					</div>
+					<div id="validEmailBox" class="otp-valid-content-box">
+						<div class="common-radio-group-label">邮箱</div>
+						<div style="text-align: left;margin-bottom: 20px;display: flex;">
+							<input id="emailValid_otp" name="emailValid" class="common-input input-disabled only-input-number"  placeholder="请输入" value="" disabled/></div>
+						<div class="input-title-code">邮箱验证码</div>
+						<div style="text-align: left;display: flex;overflow: hidden;">
+							<input id="checkEmailCode_otp" type='text' class="common-input" placeholder="请输入" onblur="handleBlurValidCode(event)" /><button id="getImproveEmailCodeId_otp" class="common-plain-primary-btn otp-send-code-btn intercept_tips" onclick="getReAuthOtpPhoneCode(this)" title="获取验证码" style="flex-shrink: 0;">获取验证码</button>
+						</div>
+					</div>
+					<div id="checkReAuthOtpMsg" class="reauth_error_submit"></div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="common-btn common-btn-default common-ellipsis otpBtn-cancel" data-dismiss="modal" title="取消">取消</button>
+					<button onclick="checkReAuthOtpPhoneCode(this)"  type="button" class="common-btn common-btn-primary common-ellipsis otpBtn-confirm" title="确定">确定</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- otp绑定无可验证方式提示弹窗 --><div class="modal" id="otpNoAuthDialog" tabindex="-1" aria-labelledby="otpNoAuthDialogLabel" aria-hidden="true" style="background-color: rgba(0,0,0,0.5)">
+		<div class="modal-dialog otp-no-auth-dialog">
+			<div class="modal-content" style="min-height: 0px;">
+				<div class="modal-header-no-auth">
+					<div>身份验证提示</div>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:-24px;opacity:unset" onclick="closeNoAuthDialog()">
+						<img src="/authserver/cusMobTheme/static/custom/images/close.png" /></button>
+				</div>
+				<div class="modal-body-no-auth">
+					<img src="/authserver/cusMobTheme/static/custom/images/jg2x.png" class="common-tips-icon"><div>暂无可用验证方式，请联系管理员</div>
+				</div>
+				<div class="modal-footer-no-auth">
+					<button type="button" data-dismiss="modal" aria-label="Close" class="common-btn common-btn-primary" onclick="closeNoAuthDialog()">
+						<span title="我知道了">我知道了</span>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="bind-guide-modal">
+		<div class="bind-guide-wrapper">
+			<div class="bind-guide-content">
+				<div class="bind-guide-title">
+					<span>绑定指南</span>
+					<button type="button" data-dismiss="modal" aria-label="Close" class="guide-close">
+						<img src="/authserver/cusMobTheme/static/custom/images/close.png" /></button>
+				</div>
+				<div class="guide-img-box">
+					<img src="/authserver/cusMobTheme/static/custom/images/bind-guide-pc.jpg" /></div>
+			</div>
+		</div>
+	</div>
+	<!--	可信设备弹窗	--><div class="trust-device-modal">
+		<div class="trust-device-wrapper">
+			<div class="trust-device-content">
+				<div class="trust-device-title">
+					<span>可信设备提示</span>
+				</div>
+				<div class="trust-device-content-box">
+					<img src="/authserver/cusMobTheme/static/custom/images/info-tips.png" class="warning-icon" /><div class="trust-device-right-text">
+						<p style="margin-bottom: 8px;">是否信任此登录设备？</p>
+						<p style="margin-bottom: 0;">若信任，下次在此设备登录时，将无需进行多因子校验</p>
+					</div>
+				</div>
+				<div class="trust-device-opt-box">
+					<button type="button" data-dismiss="modal" aria-label="Close" class="trust-device-button trust-device-cancel-btn">
+						<span title="仅本次登录">仅本次登录</span>
+					</button>
+					<button type="button" data-dismiss="modal" aria-label="Close" class="trust-device-button trust-device-sub-btn">
+						<span title="信任此设备">信任此设备</span>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--尾：移动端访问页面--><!--尾：iframe嵌入页面类型--><!--尾：普通的web访问类型--><div class="clearfloat"></div>
+	<div class="auth_login_footer">
+	    <span>
+    <span id="copyright">Copyright © 2021 天津科技大学</span>
+</span>
+	</div>
+	</body>
+</div>
+</body>
+<script>
+	var app = new Vue({
+		el: '#bodyContent',
+		data: function(){
+			return {
+				codeLength: 6,
+				code: '',
+				codeSubmit: '',
+				canSubmit: false,
+				errMsg: '',
+				exchangeArr: [],
+				codeAllow: [0,1,2,3,4,5,6,7,8,9]
+			}
+		},
+		mounted: function(){
+			var selfThis = this
+			this.$nextTick(function(){
+//			    if($("input[name=otpCode]")){
+//                    $("input[name=otpCode]")[0].focus();
+//				}
+			})
+		},
+		methods: {
+			clear: function(){
+				this.exchangeArr = new Array(Number(this.codeLength))
+//                if($("input[name=otpCode]")) {
+
+//                }
+			},
+			param2Arr:function(){
+				if(this.code.length > 0){
+					this.exchangeArr  = this.code.toString().split('')
+				}else{
+					this.exchangeArr = new Array(Number(this.codeLength))
+				}
+			},
+			setZero:function(){
+				this.$set(this.exchangeArr, 0, '')
+			},
+			tabInput:function(event, index){
+				try{
+					if(event.keyCode == 37){
+						// 按了键盘左方向键
+						if(index > 0){
+							var currentIndex = index-1, value = this.exchangeArr[currentIndex]
+							var trueIndex = currentIndex
+//							this.$refs[trueIndex][0].focus()
+                            $(".inputCodeForOtp")[trueIndex].focus()
+							if(value){
+//								this.$refs[trueIndex][0].setSelectionRange(0, value.length)
+                                $(".inputCodeForOtp")[trueIndex].setSelectionRange(0, value.length)
+							}
+						}
+					}
+					if(event.keyCode == 39){
+						// 按了键盘右方向键
+						if(index < this.codeLength-1){
+							var currentIndex = index+1, value = this.exchangeArr[currentIndex]
+							var trueIndex = currentIndex
+//							this.$refs[trueIndex][0].focus()
+                            $(".inputCodeForOtp")[trueIndex].focus()
+							if(value){
+//								this.$refs[trueIndex][0].setSelectionRange(0, value.length)
+                                $(".inputCodeForOtp")[trueIndex].setSelectionRange(0, value.length)
+							}
+						}
+					}
+					if(event.keyCode == 8){
+						this.exchangeArr.splice(index, 1, '')
+						if(index > 0){
+							var currentIndex = index-1, value = this.exchangeArr[currentIndex]
+							var trueIndex = currentIndex
+//							this.$refs[trueIndex][0].focus()
+							$(".inputCodeForOtp")[trueIndex].focus()
+							if(value){
+                                $(".inputCodeForOtp")[trueIndex].setSelectionRange(0, value.length)
+							}
+						}
+					}
+					if(this.codeAllow.indexOf(Number(event.key)) > -1){
+						this.setInput({data: Number(event.key)}, index)
+					}
+				}catch(e){
+					console.log("e:",e)
+				}
+			},
+			dealNumber:function(event, index){
+				if(this.codeAllow.indexOf(Number(event.key)) > -1){
+					this.exchangeArr.splice(index, 1, '')
+				}
+			},
+			setInput:function(event, index){
+				/**input输入，每次输入判断 */
+				var numIput = event.data
+				if(this.codeAllow.indexOf(Number(numIput)) > -1){
+					this.exchangeArr.splice(index, 1, numIput)
+				}else{
+					var code = this.exchangeArr[index]
+					this.exchangeArr.splice(index, 1, code ? code : '')
+					return
+				}
+				if(index < this.codeLength-1 && numIput >= 0){
+					var trueIndex = '' + (index + 1)
+//					this.$refs[trueIndex][0].focus()
+                    $(".inputCodeForOtp")[trueIndex].focus()
+				}
+			}
+		}
+	});
+</script>
+</html>
+

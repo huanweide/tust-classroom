@@ -1,0 +1,9 @@
+#LWP-Cookies-2.0
+Set-Cookie3: route=f656abf725caaaefed5a67f2d5c21326; path="/authserver"; domain=id.tust.edu.cn; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: JSESSIONID=F8C11B9B247646F9468D306B1DB34D3D; path="/authserver"; domain=id.tust.edu.cn; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: CASTGC=TGT-416954-wYYvzMLQ329wZk1W1UMZeE-qEHSG1LqOOG0NA0hVR7Pqly36RwC5AjH65HH7cMhg33Inull_main; path="/authserver"; domain=id.tust.edu.cn; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: MULTIFACTOR_BROWSER_FINGERPRINT=ACA8808C63E138394F5F9B671769DE2C; path="/"; domain=id.tust.edu.cn; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: MULTIFACTOR_USERS="lCogqpYOODouHD1kUnkhkmcDTrx1bMiUhkvTHCbAP2WZu/9S6uXMZ+ZH05nuz1F+w8DawIW3leeqAV3nX/W+0OKqNmXGUv5QK1ejeghvzzCm4kqj3DxlaG7TSzYd7LxhwQL1E2w5DayDwCnpRruRpJIkfPeNvwNVYUSitVA9bbc="; path="/"; domain=id.tust.edu.cn; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: happyVoyage="PuZ+EXAzoYtuLFdzMehLofmbfdUK0UX1AXhXXDD0co3WEnDn2TpgvG7URN1Qtud43sBu//FTkPbNbqFh2nAtcxySrVEtytp2qOp/NNAJrX/ogDK4aSjSh1lrzq1fb89jTERv7NXOraIVOfPaXsbuDVi2JIb5TLk7gVO4a4Waz5E="; path="/"; domain=id.tust.edu.cn; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: JSESSIONID=adbjF8Ei0ArbvfdDnQs5z; path="/"; domain=jwxtxs.tust.edu.cn; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: route=62314c9b6e7be21c860685a91064d137; path="/"; domain=jwxtxs.tust.edu.cn; path_spec; discard; HttpOnly=None; version=0

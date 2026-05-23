@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+data/classrooms.db
+data/browser_profile/
+.env
+*.log
+*.pyc
