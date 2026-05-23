@@ -1,14 +1,20 @@
 {
     "name": "TUST 空闲教室",
     "short_name": "空闲教室",
+    "description": "天津科技大学空闲教室实时查询系统",
     "start_url": "./",
     "display": "standalone",
     "background_color": "#f0f2f5",
     "theme_color": "#0891B2",
     "icons": [
         {
-            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231890ff' width='100' height='100' rx='20'/><text x='50' y='65' text-anchor='middle' fill='white' font-size='50' font-family='sans-serif'>🏫</text></svg>",
-            "sizes": "100x100",
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230891B2' width='192' height='192' rx='32'/><text x='96' y='120' text-anchor='middle' fill='white' font-size='90' font-weight='bold' font-family='sans-serif'>KF</text></svg>",
+            "sizes": "192x192",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%230891B2' width='512' height='512' rx='80'/><text x='256' y='320' text-anchor='middle' fill='white' font-size='240' font-weight='bold' font-family='sans-serif'>KF</text></svg>",
+            "sizes": "512x512",
             "type": "image/svg+xml"
         }
     ]
