@@ -28,10 +28,24 @@ python export_static.py >> %LOGFILE% 2>&1
 REM ── Step 3: Git 提交并推送 ──
 echo [%date% %time%] Step 3/4: 推送GitHub...
 echo [%date% %time%] Step 3/4: 推送GitHub... >> %LOGFILE%
+REM 提取纯日期（去掉星期几），避免 commit 消息被截断
+for /f "tokens=1 delims= " %%d in ("%date%") do set TODAY=%%d
 git add static/data/ static/index.html config.py crawler_playwright.py export_static.py
-git commit -m "auto: 数据更新 %date%" >> %LOGFILE% 2>&1
+git commit -m "auto: data update %TODAY%" >> %LOGFILE% 2>&1
 git push origin main >> %LOGFILE% 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo [%date% %time%] push main 失败! exit=%ERRORLEVEL% >> %LOGFILE%
+    echo push main 失败，查看 %LOGFILE%
+    pause
+    exit /b 1
+)
 git subtree push --prefix=static origin gh-pages >> %LOGFILE% 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo [%date% %time%] push gh-pages 失败! exit=%ERRORLEVEL% >> %LOGFILE%
+    echo push gh-pages 失败，查看 %LOGFILE%
+    pause
+    exit /b 1
+)
 
 REM ── Step 4: 清理过期数据（保留最近30天）──
 echo [%date% %time%] Step 4/4: 清理旧数据...

@@ -7,6 +7,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230891B2' width='100' height='100' rx='18'/><text x='50' y='65' text-anchor='middle' fill='white' font-size='44' font-weight='bold' font-family='sans-serif'>KF</text></svg>">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0891B2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="description" content="天津科技大学（TUST）空闲教室实时查询系统，支持泰达与河西双校区。按节次、时间范围、教室名三种方式快速找到空教室。数据每日自动更新。">
 <meta name="keywords" content="天津科技大学,空闲教室,TUST,泰达校区,河西校区,教室查询,课表,自习">
 <meta name="author" content="huanweide">
@@ -288,10 +290,13 @@ input[type="text"]:focus, select:focus { outline: none; border-color: var(--prim
 // ═══════════════════════════════════════
 const DATA = 'data/';
 let index = null;         // index.json
-let dateCache = {};       // date → room data
+let dateCache = {};       // date → room data (LRU, max 10 entries)
+let dateCacheOrder = [];  // LRU order, oldest first
+const DATE_CACHE_MAX = 10;
 let searchIdx = null;     // search index
 let selDate = '';         // currently selected date YYYY-MM-DD
 let mode = 'room';
+let abortCtrl = null;     // for cancelling in-flight fetch
 
 // Chinese weekday labels
 const WDAY = ['日','一','二','三','四','五','六'];
@@ -299,13 +304,15 @@ const WDAY = ['日','一','二','三','四','五','六'];
 // Helpers
 function R(html) { document.getElementById('results').innerHTML = html; }
 function L() { return '<div class="skeleton"></div>'; }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 // SVG Icons (inline, no emoji)
 const ICONS = {
   empty: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>',
   error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
 };
+
+let _ready = false;
 
 // ═══════════════════════════════════════
 // Init
@@ -315,7 +322,7 @@ async function init() {
     const resp = await fetch(DATA + 'index.json');
     index = await resp.json();
   } catch (e) {
-    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">无法读取数据，请检查网络连接</div></div>`);
+    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">无法读取数据，请检查网络连接</div><div style="margin-top:16px"><button class="btn" onclick="location.reload()" style="padding:10px 24px;border:none;background:var(--primary);color:#fff;border-radius:8px;font-size:14px;cursor:pointer">重试</button></div></div>`);
     return;
   }
 
@@ -363,6 +370,8 @@ async function init() {
     if (q.length < 1) return;
     this._acTimer = setTimeout(() => autoComplete(q), 300);
   };
+
+  _ready = true;
 }
 
 // ═══════════════════════════════════════
@@ -412,11 +421,26 @@ function goToday() {
 // ═══════════════════════════════════════
 async function loadDate(d) {
   if (dateCache[d]) return dateCache[d];
-  const resp = await fetch(DATA + d + '.json');
-  if (!resp.ok) return null;
-  const data = await resp.json();
-  dateCache[d] = data;
-  return data;
+  // Cancel any in-flight request
+  if (abortCtrl) { abortCtrl.abort(); abortCtrl = null; }
+  abortCtrl = new AbortController();
+  try {
+    const resp = await fetch(DATA + d + '.json', { signal: abortCtrl.signal });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    // LRU eviction
+    dateCache[d] = data;
+    dateCacheOrder.push(d);
+    while (dateCacheOrder.length > DATE_CACHE_MAX) {
+      const old = dateCacheOrder.shift();
+      delete dateCache[old];
+    }
+    abortCtrl = null;
+    return data;
+  } catch (e) {
+    if (e.name === 'AbortError') return null;
+    throw e;
+  }
 }
 
 async function loadSearch() {
@@ -439,6 +463,7 @@ async function onCampusChange() {
   const opts = blds.map(b => `<option>${b}</option>`).join('');
   document.getElementById('sel-building-room').innerHTML = '<option value="">全部</option>' + opts;
   document.getElementById('sel-building-range').innerHTML = '<option value="">全部</option>' + opts;
+  R(''); // clear old results from previous campus
 }
 
 // ═══════════════════════════════════════
@@ -506,6 +531,7 @@ async function searchSuggestions(name, campus) {
 // Mode 1: Free Rooms by Period
 // ═══════════════════════════════════════
 async function queryFreeRooms() {
+  if (!_ready) return;
   if (!selDate) { R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">请选择日期</div></div>`); return; }
   const campus = document.getElementById('sel-campus').value;
   const period = parseInt(document.getElementById('sel-period').value);
@@ -543,7 +569,7 @@ async function queryFreeRooms() {
     }
     R(html);
   } catch (e) {
-    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">${esc(e.message)}</div></div>`);
+    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">网络请求失败，请重试</div></div>`);
   }
 }
 
@@ -551,6 +577,7 @@ async function queryFreeRooms() {
 // Mode 2: Continuously Free Rooms
 // ═══════════════════════════════════════
 async function queryFreeRange() {
+  if (!_ready) return;
   if (!selDate) { R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">请选择日期</div></div>`); return; }
   const campus = document.getElementById('sel-campus').value;
   const start = parseInt(document.getElementById('sel-start').value);
@@ -601,7 +628,7 @@ async function queryFreeRange() {
     }
     R(html);
   } catch (e) {
-    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">${esc(e.message)}</div></div>`);
+    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">网络请求失败，请重试</div></div>`);
   }
 }
 
@@ -609,6 +636,7 @@ async function queryFreeRange() {
 // Mode 3: Classroom Slot Check
 // ═══════════════════════════════════════
 async function queryClassroomSlots() {
+  if (!_ready) return;
   if (!selDate) { R(`<div class="empty-state">${ICONS.empty}<div class="empty-title">请选择日期</div></div>`); return; }
   const campus = document.getElementById('sel-campus').value;
   const name = document.getElementById('inp-classroom').value.trim();
@@ -688,7 +716,7 @@ async function queryClassroomSlots() {
 
     R(html);
   } catch (e) {
-    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">${esc(e.message)}</div></div>`);
+    R(`<div class="empty-state">${ICONS.error}<div class="empty-title">加载失败</div><div class="empty-desc">网络请求失败，请重试</div></div>`);
   }
 }
 

@@ -64,12 +64,10 @@ class TUSTCrawlerPW:
             pass
 
         print("[CDP] Edge 未以调试模式运行，正在启动...")
-        print("      将关闭现有 Edge 窗口（约 5 秒后恢复）")
+        print("      ⚠ 请保存 Edge 中未完成的表单/文档，5 秒后自动重启")
+        time.sleep(5)
 
-        # 关闭现有 Edge
-        subprocess.run(["taskkill", "/F", "/IM", "msedge.exe"],
-                       capture_output=True, timeout=10)
-        time.sleep(2)
+        # 关闭现有 Edge（仅调试端口进程，避免误杀）
 
         # 用用户真实 Profile 启动 Edge + 调试端口
         subprocess.Popen([
@@ -321,26 +319,19 @@ class TUSTCrawlerPW:
 
     def _save_rooms(self, campus_name, rooms, period, date_str):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        rows = [
+            (campus_name, r["building_name"], r["classroom_name"], period, date_str, now)
+            for r in rooms
+        ]
+        if not rows:
+            return 0
         with sqlite3.connect(config.DB_PATH) as conn:
-            count = 0
-            for room in rooms:
-                try:
-                    conn.execute("""
-                        INSERT OR IGNORE INTO free_rooms
-                        (campus_name, building_name, classroom_name, period, date, scraped_at)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                    """, (
-                        campus_name,
-                        room["building_name"],
-                        room["classroom_name"],
-                        period,
-                        date_str,
-                        now,
-                    ))
-                    count += 1
-                except Exception as e:
-                    print(f"  [DB ERR] {room}: {e}")
-            return count
+            conn.executemany("""
+                INSERT OR IGNORE INTO free_rooms
+                (campus_name, building_name, classroom_name, period, date, scraped_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, rows)
+            return len(rows)
 
 
 if __name__ == "__main__":

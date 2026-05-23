@@ -1,0 +1,136 @@
+<!--
+  TUST 空闲教室 — 微信小程序版
+  数据来源: GitHub Pages 静态 JSON（与 PWA 共用同一数据源）
+-->
+<view class="container">
+
+  <!-- 头部 -->
+  <view class="header">
+    <view class="header-title">TUST 空闲教室</view>
+    <view class="header-sub">天津科技大学 · 泰达 & 河西</view>
+  </view>
+
+  <!-- 校区选择 -->
+  <view class="section">
+    <view class="label">校区</view>
+    <picker mode="selector" range="{{campuses}}" value="{{campusIdx}}" bindchange="onCampusChange">
+      <view class="picker">{{campuses[campusIdx] || '加载中...'}}</view>
+    </picker>
+  </view>
+
+  <!-- 日期导航 -->
+  <view class="section">
+    <view class="date-nav">
+      <view class="date-arrow" bindtap="shiftDate" data-dir="-1">◀</view>
+      <scroll-view class="date-scroll" scroll-x enhanced show-scrollbar="{{false}}" scroll-into-view="date-{{selDateIdx}}">
+        <view class="date-list">
+          <view
+            wx:for="{{dates}}"
+            wx:key="*this"
+            class="date-chip {{selDate === item ? 'active' : ''}}"
+            id="date-{{index}}"
+            data-date="{{item}}"
+            bindtap="pickDate"
+          >
+            <view class="date-mmdd">{{util.mmdd(item)}}</view>
+            <view class="date-wday">{{util.wday(item)}}</view>
+          </view>
+        </view>
+      </scroll-view>
+      <view class="date-arrow" bindtap="shiftDate" data-dir="1">▶</view>
+    </view>
+    <view class="date-today" bindtap="goToday">今天</view>
+  </view>
+
+  <!-- 模式一：按节次查空闲教室 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="mode-badge mode1">模式一</view>
+      <view class="card-title">按节次查空闲教室</view>
+    </view>
+    <view class="card-body">
+      <view class="label">选择节次</view>
+      <picker mode="selector" range="{{periodLabels}}" value="{{mode1Period}}" bindchange="onMode1Period">
+        <view class="picker">{{periodLabels[mode1Period] || '请选择节次'}}</view>
+      </picker>
+      <view class="btn" bindtap="queryMode1">查询空闲教室</view>
+    </view>
+  </view>
+
+  <!-- 模式二：按时间范围查连续空闲 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="mode-badge mode2">模式二</view>
+      <view class="card-title">查连续空闲教室</view>
+    </view>
+    <view class="card-body">
+      <view class="row">
+        <view class="flex-1">
+          <view class="label">开始节次</view>
+          <picker mode="selector" range="{{periodLabels}}" value="{{mode2Start}}" bindchange="onMode2Start">
+            <view class="picker">{{periodLabels[mode2Start] || '开始'}}</view>
+          </picker>
+        </view>
+        <view class="flex-1">
+          <view class="label">结束节次</view>
+          <picker mode="selector" range="{{periodLabels}}" value="{{mode2End}}" bindchange="onMode2End">
+            <view class="picker">{{periodLabels[mode2End] || '结束'}}</view>
+          </picker>
+        </view>
+      </view>
+      <view class="label">筛选教学楼（可选）</view>
+      <picker mode="selector" range="{{buildingList}}" value="{{mode2Building}}" bindchange="onMode2Building">
+        <view class="picker">{{buildingList[mode2Building] || '全部教学楼'}}</view>
+      </picker>
+      <view class="btn" bindtap="queryMode2">查询连续空闲</view>
+    </view>
+  </view>
+
+  <!-- 模式三：查某教室空闲时段 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="mode-badge mode3">模式三</view>
+      <view class="card-title">查某教室空闲时段</view>
+    </view>
+    <view class="card-body">
+      <view class="label">输入教室名</view>
+      <input class="input" placeholder="例: 3-101, 9-12" value="{{mode3Room}}" bindinput="onMode3Input" bindfocus="onMode3Focus" />
+      <view wx:if="{{suggestions.length > 0}}" class="suggestions">
+        <view wx:for="{{suggestions}}" wx:key="*this" class="sug-item" bindtap="pickSuggestion" data-name="{{item}}">{{item}}</view>
+      </view>
+      <view class="btn" bindtap="queryMode3">查询空闲时段</view>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-box">
+    <view class="spinner"></view>
+    <view class="loading-text">{{loadingText}}</view>
+  </view>
+
+  <!-- 结果区域 -->
+  <view wx:if="{{results.length > 0}}" class="results">
+    <view class="result-summary">{{resultSummary}}</view>
+    <view wx:for="{{results}}" wx:key="name" class="result-item">
+      <view class="result-name">{{item.name}}</view>
+      <view class="result-detail">{{item.detail}}</view>
+      <view class="result-periods">
+        <view wx:for="{{item.periods}}" wx:key="*this" wx:for-item="p" class="period-tag {{p.free ? 'free' : 'busy'}}">{{p.label}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{emptyMsg}}" class="empty-box">
+    <view class="empty-icon">📭</view>
+    <view class="empty-title">{{emptyMsg}}</view>
+    <view wx:if="{{emptyHint}}" class="empty-hint">{{emptyHint}}</view>
+  </view>
+
+  <!-- 底部 -->
+  <view class="footer">
+    <view class="footer-text">数据更新于 {{updated}}</view>
+    <view class="footer-text">天津科技大学 空闲教室查询 · 非官方</view>
+  </view>
+
+</view>

@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "TUST 空闲教室",
+    "navigationBarBackgroundColor": "#0891B2",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F8FAFC"
+  },
+  "sitemapLocation": "sitemap.json"
+}

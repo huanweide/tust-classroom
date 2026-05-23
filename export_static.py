@@ -116,4 +116,8 @@ def export():
 
 
 if __name__ == "__main__":
-    export()
+    try:
+        export()
+    except Exception as e:
+        print(f"[FATAL] 导出失败: {e}", file=__import__('sys').stderr)
+        exit(1)
