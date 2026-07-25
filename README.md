@@ -1,3 +1,9 @@
+<!-- badges -->
+[![License](https://img.shields.io/github/license/huanweide/tust-classroom)](LICENSE)
+[![CI](https://github.com/huanweide/tust-classroom/actions/workflows/ci.yml/badge.svg)](https://github.com/huanweide/tust-classroom/actions/workflows/ci.yml)
+[![Stars](https://img.shields.io/github/stars/huanweide/tust-classroom)](https://github.com/huanweide/tust-classroom/stargazers)
+<!-- /badges -->
+
 # 🏫 TUST 空闲教室
 
 > 天津科技大学空闲教室实时查询系统 · 泰达 & 河西双校区
