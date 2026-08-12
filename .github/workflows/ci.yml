@@ -11,6 +11,8 @@ jobs:
         with:
           python-version: "3.x"
       - name: Syntax check
-        run: python -m compileall -q . || true
+        run: python -m compileall -q .
       - name: Lint (informational)
-        run: pip install ruff >/dev/null 2>&1; ruff check . || true
+        # ruff lint is informational; do not fail the build on style findings
+        continue-on-error: true
+        run: pip install ruff >/dev/null 2>&1; ruff check .
