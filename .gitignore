@@ -5,3 +5,4 @@ data/browser_profile/
 .env
 *.log
 *.pyc
+data/cookies.txt
