@@ -23,6 +23,7 @@ _stop = False
 
 def _request_stop(signum, frame):
     global _stop
+    _stop = True
     log(f"收到信号 {signum}，请求停止保活循环...")
 
 
