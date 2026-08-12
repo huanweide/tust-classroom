@@ -6,3 +6,4 @@ data/browser_profile/
 *.log
 *.pyc
 data/cookies.txt
+cloudflared.exe

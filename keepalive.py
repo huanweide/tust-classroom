@@ -10,11 +10,24 @@
 """
 import argparse
 import os
+import signal
 import sys
 import time
 from datetime import datetime
 
 from playwright.sync_api import sync_playwright
+
+# 优雅退出标志：收到 SIGINT/SIGTERM 后置位，run_loop 在下个检查点退出
+_stop = False
+
+
+def _request_stop(signum, frame):
+    global _stop
+    log(f"收到信号 {signum}，请求停止保活循环...")
+
+
+signal.signal(signal.SIGINT, _request_stop)
+signal.signal(signal.SIGTERM, _request_stop)
 
 EDGE_USER_DATA = os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\User Data")
 EDGE_EXE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
@@ -112,7 +125,7 @@ def run_loop():
     success = 0
     fail = 0
 
-    while True:
+    while not _stop:
         try:
             if ping_urp():
                 success += 1
@@ -123,7 +136,16 @@ def run_loop():
             log(f"未预期错误: {e}")
             fail += 1
 
-        time.sleep(PING_INTERVAL)
+        if _stop:
+            break
+
+        # 分段 sleep，保证及时响应停止信号（而非一次性睡满 25 分钟）
+        for _ in range(PING_INTERVAL // 5):
+            if _stop:
+                break
+            time.sleep(5)
+
+    log("URP 保活循环已优雅停止")
 
 
 def run_once():
