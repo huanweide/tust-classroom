@@ -316,6 +316,11 @@ def api_free_classrooms_in_range():
     if not date:
         return jsonify({"error": "需要 date 参数"}), 400
 
+    # 起始节次大于结束节次时，交换以避免 period_count 为负、
+    # SQL 的 BETWEEN 区间反转导致静默返回空结果
+    if start > end:
+        start, end = end, start
+
     period_count = end - start + 1
     sql = """
         SELECT building_name, classroom_name,

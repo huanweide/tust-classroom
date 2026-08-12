@@ -236,19 +236,20 @@ class TUSTCrawlerPW:
 
     def _get_buildings(self, page, campus_code):
         """获取某校区所有教学楼"""
-        result = page.evaluate(f"""
-            async () => {{
+        result = page.evaluate(
+            """(campus_code) => {
                 const formData = new URLSearchParams();
-                formData.append('xqh', '{campus_code}');
-                const resp = await fetch('/student/teachingResources/freeClassroom/queryCodeTeaBuildingList', {{
+                formData.append('xqh', campus_code);
+                const resp = await fetch('/student/teachingResources/freeClassroom/queryCodeTeaBuildingList', {
                     method: 'POST',
-                    headers: {{'Content-Type': 'application/x-www-form-urlencoded'}},
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: formData.toString()
-                }});
+                });
                 if (!resp.ok) return [];
                 return await resp.json();
-            }}
-        """)
+            }""",
+            campus_code,
+        )
         buildings = []
         for item in result:
             inner = item.get("id", item)
@@ -263,43 +264,45 @@ class TUSTCrawlerPW:
     def _set_building(self, page, position, campus_name):
         """设置当前查询的教学楼上下文"""
         try:
-            result = page.evaluate(f"""
-                async () => {{
+            result = page.evaluate(
+                """(args) => {
                     const formData = new URLSearchParams();
-                    formData.append('position', '{position}');
-                    formData.append('xqm', '{campus_name}');
-                    const resp = await fetch('/student/teachingResources/freeClassroom/today', {{
+                    formData.append('position', args.position);
+                    formData.append('xqm', args.xqm);
+                    const resp = await fetch('/student/teachingResources/freeClassroom/today', {
                         method: 'POST',
-                        headers: {{'Content-Type': 'application/x-www-form-urlencoded'}},
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                         body: formData.toString()
-                    }});
+                    });
                     return resp.ok;
-                }}
-            """)
+                }""",
+                {"position": position, "xqm": campus_name},
+            )
             return result
         except Exception:
             return False
 
     def _fetch_period(self, page, period, building_name, dayoffset):
         """查询某个节次的空闲教室"""
-        result = page.evaluate(f"""
-            async () => {{
-                try {{
+        result = page.evaluate(
+            """(args) => {
+                try {
                     const resp = await fetch(
-                        '/student/teachingResources/freeClassroom/today/{period}',
-                        {{
+                        '/student/teachingResources/freeClassroom/today/' + args.period,
+                        {
                             method: 'POST',
-                            headers: {{'Content-Type': 'application/x-www-form-urlencoded'}},
-                            body: 'dayplus={dayoffset}'
-                        }}
+                            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                            body: 'dayplus=' + args.dayoffset
+                        }
                     );
-                    if (!resp.ok) return {{error: 'HTTP ' + resp.status}};
+                    if (!resp.ok) return {error: 'HTTP ' + resp.status};
                     return await resp.json();
-                }} catch (e) {{
-                    return {{error: e.message}};
-                }}
-            }}
-        """)
+                } catch (e) {
+                    return {error: e.message};
+                }
+            }""",
+            {"period": period, "dayoffset": dayoffset},
+        )
 
         if "error" in result:
             return []
@@ -346,8 +349,22 @@ if __name__ == "__main__":
     crawler = TUSTCrawlerPW()
     if args.range:
         parts = args.range.split("-")
-        dr = (int(parts[0]), int(parts[1]))
-        total = crawler.run(day_range=dr)
+        if len(parts) != 2:
+            print(f"[错误] --range 格式应为 '起-止'（如 '0-6'），收到: {args.range!r}",
+                  file=sys.stderr)
+            sys.exit(2)
+        try:
+            start = int(parts[0])
+            end = int(parts[1])
+        except ValueError:
+            print(f"[错误] --range 的起止都必须是整数，收到: {args.range!r}",
+                  file=sys.stderr)
+            sys.exit(2)
+        if start > end:
+            print(f"[错误] --range 的起止无效，起始({start}) 必须不大于 结束({end})",
+                  file=sys.stderr)
+            sys.exit(2)
+        total = crawler.run(day_range=(start, end))
     else:
         total = crawler.run(dayoffset=args.dayoffset)
     print(f"\n完成! 共 {total} 条空闲教室记录")
