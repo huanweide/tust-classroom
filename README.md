@@ -98,6 +98,8 @@ URP 会话保活（配合 Windows 任务计划每 25 分钟触发）：
 python keepalive.py --once
 ```
 
+> **内网穿透（cloudflared）**：`cloudflared.exe` 属体积较大的二进制依赖，**不入库**（已被 `.gitignore` 忽略，不会提交或推送）。如需对外临时暴露本机服务，请从 [Cloudflare 官方下载页](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) 获取对应平台的 `cloudflared`，本地运行 `cloudflared tunnel --url http://127.0.0.1:5000` 即可，**切勿把该 exe 提交到仓库**。
+
 ## 配置说明
 
 主要配置位于 `config.py`：
