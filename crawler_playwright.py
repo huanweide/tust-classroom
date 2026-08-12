@@ -10,7 +10,6 @@
 import os
 import re
 import sqlite3
-import subprocess
 import sys
 import time
 from datetime import datetime, timedelta
@@ -18,11 +17,7 @@ from datetime import datetime, timedelta
 from playwright.sync_api import sync_playwright
 
 import config
-
-EDGE_USER_DATA = os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\User Data")
-EDGE_EXE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-DEBUG_PORT = 9222
-CDP_ENDPOINT = f"http://localhost:{DEBUG_PORT}"
+from edge_cdp import CDP_ENDPOINT, ensure_edge_debug  # IMP-056：统一 CDP 常量与启动逻辑
 
 
 class TUSTCrawlerPW:
@@ -54,43 +49,8 @@ class TUSTCrawlerPW:
             conn.execute("DELETE FROM free_rooms WHERE date = ?", (date_str,))
 
     def _ensure_edge_debug(self):
-        """确保 Edge 以调试模式运行，复用用户 Profile"""
-        try:
-            import urllib.request
-            urllib.request.urlopen(f"{CDP_ENDPOINT}/json/version", timeout=2)
-            print("[CDP] Edge 调试端口已就绪")
-            return True
-        except Exception:
-            pass
-
-        print("[CDP] Edge 未以调试模式运行，正在启动...")
-        print("      ⚠ 请保存 Edge 中未完成的表单/文档，5 秒后自动重启")
-        time.sleep(5)
-
-        # 关闭现有 Edge（仅调试端口进程，避免误杀）
-
-        # 用用户真实 Profile 启动 Edge + 调试端口
-        subprocess.Popen([
-            EDGE_EXE,
-            f"--remote-debugging-port={DEBUG_PORT}",
-            f"--user-data-dir={EDGE_USER_DATA}",
-            "--no-first-run",
-            "--no-default-browser-check",
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        # 等待 CDP 就绪
-        for _ in range(15):
-            time.sleep(1)
-            try:
-                import urllib.request
-                urllib.request.urlopen(f"{CDP_ENDPOINT}/json/version", timeout=2)
-                print("[CDP] Edge 调试端口就绪")
-                return True
-            except Exception:
-                pass
-
-        print("[CDP] Edge 启动超时")
-        return False
+        """确保 Edge 以调试模式运行，复用用户 Profile（委托 edge_cdp.ensure_edge_debug）"""
+        return ensure_edge_debug()
 
     def run(self, date_str=None, dayoffset=1, day_range=None):
         """爬取空闲教室
@@ -152,17 +112,19 @@ class TUSTCrawlerPW:
                 print(f"# 日期 [{day_idx+1}/{len(offsets)}] {d} (dayoffset={dayoff})")
                 print(f"{'#'*50}")
 
-                # 续传：如果该日已有数据且非单天模式，跳过
+                # 续传（范围模式）：当日已有数据则整日跳过——不 clear_today_cache、不重爬，
+                # 避免无谓的 DELETE 与重复爬取（IMP-053）。
                 if len(offsets) > 1:
                     with sqlite3.connect(config.DB_PATH) as conn:
                         cnt = conn.execute(
                             "SELECT COUNT(*) FROM free_rooms WHERE date = ?", (d,)
                         ).fetchone()[0]
                     if cnt > 0:
-                        print(f"[SKIP] {d} 已有 {cnt} 条记录，跳过")
+                        print(f"[SKIP] {d} 已有 {cnt} 条记录，整日跳过（不删不重爬）")
                         total += cnt
                         continue
 
+                # 仅当确实需要（重新）爬取当天时才清空缓存
                 self.clear_today_cache(d)
 
                 for campus_code, campus_name in campuses:

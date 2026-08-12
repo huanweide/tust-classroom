@@ -109,91 +109,87 @@ def api_classrooms_search():
     if not q:
         return jsonify([])
 
+    # IMP-052：将 5 段串行 SQL 合并为单条带优先级的 UNION 查询，
+    # 仅 1 次 DB 往返；用单一累积 seen set 去重，避免反复重建 set。
     results = []
-    sql_params = []
-
-    # 1. 教室名精确匹配
-    exact = query_db(
-        "SELECT DISTINCT campus_name, building_name, classroom_name "
-        "FROM free_rooms WHERE classroom_name = ?"
-        + (" AND campus_name = ?" if campus else ""),
-        (q,) + ((campus,) if campus else ()),
-    )
-    results = [(r["campus_name"], r["building_name"], r["classroom_name"], 0) for r in exact]
-
-    # 2. 教室名包含查询词
+    sql_parts = []
+    params = []
     like_q = f"%{q}%"
-    like_rows = query_db(
-        "SELECT DISTINCT campus_name, building_name, classroom_name "
+
+    # 0 精确匹配
+    sql_parts.append(
+        "SELECT campus_name, building_name, classroom_name, 0 AS match_type "
+        "FROM free_rooms WHERE classroom_name = ?"
+        + (" AND campus_name = ?" if campus else "")
+    )
+    params.append(q)
+    if campus:
+        params.append(campus)
+
+    # 1 教室名包含查询词
+    sql_parts.append(
+        "SELECT campus_name, building_name, classroom_name, 1 AS match_type "
         "FROM free_rooms WHERE classroom_name LIKE ?"
         + (" AND campus_name = ?" if campus else "")
-        + " LIMIT ?",
-        (like_q,) + ((campus,) if campus else ()) + (limit,),
     )
-    for r in like_rows:
-        key = (r["campus_name"], r["building_name"], r["classroom_name"])
-        if key not in {(x[0], x[1], x[2]) for x in results}:
-            results.append((r["campus_name"], r["building_name"], r["classroom_name"], 1))
+    params.append(like_q)
+    if campus:
+        params.append(campus)
 
-    # 3. 智能解析查询词：如 "9-12" → 教学楼 "9-" 中房间号含 "12"
+    # 智能解析查询词：如 "9-12" → 教学楼 "9-" 中房间号含 "12"
     import re
     m = re.match(r'^(\d+)[-—](\d+.*)$', q)
     if m:
         bld_prefix = m.group(1)
         room_part = m.group(2)
-        # 直接一条 SQL：教学楼匹配 + 教室名匹配
-        smart_rows = query_db(
-            "SELECT DISTINCT campus_name, building_name, classroom_name "
-            "FROM free_rooms "
-            "WHERE (building_name LIKE ? OR building_name = ? OR building_name LIKE ?)"
-            + (" AND campus_name = ?" if campus else ""),
-            (f"%{bld_prefix}%", f"{bld_prefix}-", f"{bld_prefix}号楼%",
-             *((campus,) if campus else ())),
+        # 2 教学楼匹配（房间号过滤在 Python 侧做）
+        sql_parts.append(
+            "SELECT campus_name, building_name, classroom_name, 2 AS match_type "
+            "FROM free_rooms WHERE (building_name LIKE ? OR building_name = ? OR building_name LIKE ?)"
+            + (" AND campus_name = ?" if campus else "")
         )
-        for r in smart_rows:
-            key = (r["campus_name"], r["building_name"], r["classroom_name"])
-            if key not in {(x[0], x[1], x[2]) for x in results}:
-                cname = r["classroom_name"].lower()
-                if room_part.lower() in cname or cname.startswith(room_part.lower()):
-                    results.append((r["campus_name"], r["building_name"], r["classroom_name"], 2))
-        # 第二优先级：教室名 LIKE 包含完整查询词的房间
-        more_rows = query_db(
-            "SELECT DISTINCT campus_name, building_name, classroom_name "
-            "FROM free_rooms "
-            "WHERE classroom_name LIKE ?"
-            + (" AND campus_name = ?" if campus else ""),
-            (f"%{q}%", *((campus,) if campus else ())),
+        params.extend([f"%{bld_prefix}%", f"{bld_prefix}-", f"{bld_prefix}号楼%"])
+        if campus:
+            params.append(campus)
+        # 3 教室名 LIKE 包含完整查询词的房间（补全智能解析分支）
+        sql_parts.append(
+            "SELECT campus_name, building_name, classroom_name, 3 AS match_type "
+            "FROM free_rooms WHERE classroom_name LIKE ?"
+            + (" AND campus_name = ?" if campus else "")
         )
-        for r in more_rows:
-            key = (r["campus_name"], r["building_name"], r["classroom_name"])
-            if key not in {(x[0], x[1], x[2]) for x in results}:
-                results.append((r["campus_name"], r["building_name"], r["classroom_name"], 3))
+        params.append(like_q)
+        if campus:
+            params.append(campus)
 
-    # 4. 回退：教学楼名包含查询词
-    if len(results) < 3 and campus:
-        bld_rows = query_db(
-            "SELECT DISTINCT campus_name, building_name, classroom_name "
-            "FROM free_rooms "
-            "WHERE building_name LIKE ? AND campus_name = ?",
-            (like_q, campus),
+    if campus:
+        # 4 回退：教学楼名包含查询词（低优先级）
+        sql_parts.append(
+            "SELECT campus_name, building_name, classroom_name, 4 AS match_type "
+            "FROM free_rooms WHERE building_name LIKE ? AND campus_name = ?"
         )
-        for r in bld_rows:
-            key = (r["campus_name"], r["building_name"], r["classroom_name"])
-            if key not in {(x[0], x[1], x[2]) for x in results}:
-                results.append((r["campus_name"], r["building_name"], r["classroom_name"], 4))
+        params.extend([like_q, campus])
+        # 5 回退：教室名以查询词开头（低优先级）
+        sql_parts.append(
+            "SELECT campus_name, building_name, classroom_name, 5 AS match_type "
+            "FROM free_rooms WHERE classroom_name LIKE ? AND campus_name = ?"
+        )
+        params.extend([f"{q}%", campus])
 
-    # 5. 回退：教室名以查询词开头
-    if len(results) < 3 and campus:
-        start_rows = query_db(
-            "SELECT DISTINCT campus_name, building_name, classroom_name "
-            "FROM free_rooms "
-            "WHERE classroom_name LIKE ? AND campus_name = ?",
-            (f"{q}%", campus),
-        )
-        for r in start_rows:
-            key = (r["campus_name"], r["building_name"], r["classroom_name"])
-            if key not in {(x[0], x[1], x[2]) for x in results}:
-                results.append((r["campus_name"], r["building_name"], r["classroom_name"], 5))
+    union_sql = " UNION ALL ".join(sql_parts) + " ORDER BY match_type"
+    rows = query_db(union_sql, params)
+
+    # 单一累积 set 去重；match_type==2 按房间号二次过滤（保持原语义）
+    seen = set()
+    for r in rows:
+        key = (r["campus_name"], r["building_name"], r["classroom_name"])
+        if key in seen:
+            continue
+        if r["match_type"] == 2 and room_part:
+            cname = r["classroom_name"].lower()
+            if room_part.lower() not in cname and not cname.startswith(room_part.lower()):
+                continue
+        seen.add(key)
+        results.append((r["campus_name"], r["building_name"], r["classroom_name"], r["match_type"]))
 
     # 格式化输出
     output = []

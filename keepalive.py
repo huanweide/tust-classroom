@@ -12,28 +12,29 @@ import argparse
 import os
 import signal
 import sys
+import threading
 import time
 from datetime import datetime
 
 from playwright.sync_api import sync_playwright
+from edge_cdp import CDP_ENDPOINT, cdp_available  # IMP-056：统一 CDP 常量与探测逻辑
 
 # 优雅退出标志：收到 SIGINT/SIGTERM 后置位，run_loop 在下个检查点退出
 _stop = False
+# 可中断等待事件：置位后 event.wait 立即返回，省去分段忙等（IMP-055）
+_stop_event = threading.Event()
 
 
 def _request_stop(signum, frame):
     global _stop
     _stop = True
+    _stop_event.set()
     log(f"收到信号 {signum}，请求停止保活循环...")
 
 
 signal.signal(signal.SIGINT, _request_stop)
 signal.signal(signal.SIGTERM, _request_stop)
 
-EDGE_USER_DATA = os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\User Data")
-EDGE_EXE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-DEBUG_PORT = 9222
-CDP_ENDPOINT = f"http://localhost:{DEBUG_PORT}"
 URP_BASE = "http://jwxtxs.tust.edu.cn:46110"
 PING_INTERVAL = 25 * 60  # 25 分钟
 LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "keepalive.log")
@@ -49,16 +50,6 @@ def log(msg):
             f.write(line + "\n")
     except Exception:
         pass
-
-
-def cdp_available():
-    """检查 Edge 调试端口是否可用（不重启 Edge）"""
-    import urllib.request
-    try:
-        urllib.request.urlopen(f"{CDP_ENDPOINT}/json/version", timeout=2)
-        return True
-    except Exception:
-        return False
 
 
 def ping_urp():
@@ -140,11 +131,10 @@ def run_loop():
         if _stop:
             break
 
-        # 分段 sleep，保证及时响应停止信号（而非一次性睡满 25 分钟）
-        for _ in range(PING_INTERVAL // 5):
-            if _stop:
-                break
-            time.sleep(5)
+        # IMP-055：用可中断的 Event.wait 替代分段忙等，
+        # 收到停止信号时立即返回（无需等待 25 分钟），且省去循环。
+        if _stop_event.wait(PING_INTERVAL):
+            break
 
     log("URP 保活循环已优雅停止")
 
