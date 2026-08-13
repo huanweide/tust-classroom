@@ -4,6 +4,7 @@ import sqlite3
 from flask import Flask, jsonify, request, send_from_directory
 
 import config
+import re
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 
@@ -137,7 +138,6 @@ def api_classrooms_search():
         params.append(campus)
 
     # 智能解析查询词：如 "9-12" → 教学楼 "9-" 中房间号含 "12"
-    import re
     m = re.match(r'^(\d+)[-—](\d+.*)$', q)
     if m:
         bld_prefix = m.group(1)
@@ -232,8 +232,7 @@ def api_classroom_slots(name):
             (like_q, campus),
         )
         # 也尝试教学楼前缀匹配
-        import re as _re
-        m = _re.match(r'^(\d+)[-—](\d+.*)$', name)
+        m = re.match(r'^(\d+)[-—](\d+.*)$', name)
         if m and len(suggestions) < 5:
             bld_prefix = m.group(1)
             room_part = m.group(2)
@@ -339,7 +338,7 @@ def api_free_classrooms_in_range():
 
     rows = query_db(sql, params)
     for r in rows:
-        r["period_list"] = [int(p) for p in r["periods"].split(",")]
+        r["period_list"] = sorted(int(p) for p in r["periods"].split(","))
 
     return jsonify(rows)
 
