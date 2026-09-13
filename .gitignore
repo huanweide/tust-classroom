@@ -7,3 +7,7 @@ data/browser_profile/
 *.pyc
 data/cookies.txt
 cloudflared.exe
+
+# 端到端测试产物（截图/结果，测试脚本本身入库）
+e2e_shots/
+e2e_result.json
