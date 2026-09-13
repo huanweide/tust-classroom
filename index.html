@@ -657,9 +657,9 @@ async function queryClassroomSlots() {
       return;
     }
 
-    // Find exact match
-    let foundBld = null, foundPeriods = [];
-    for (const [bld, rooms] of Object.entries(data[campus])) {
+    // 1) 精确匹配当天空闲数据
+    let foundBld = null, foundPeriods = [], resolvedName = name;
+    for (const [bld, rooms] of Object.entries(data[campus] || {})) {
       if (rooms[name]) {
         foundBld = bld;
         foundPeriods = rooms[name];
@@ -667,10 +667,29 @@ async function queryClassroomSlots() {
       }
     }
 
+    // 2) 未精确命中：用搜索索引智能解析
+    //    支持 "9-3" → 9-楼 3号阶梯、"3阶梯" 模糊匹配 "3阶梯(d)" 等
     if (!foundBld) {
-      // Search for suggestions
       const sug = await searchSuggestions(name, campus);
-      let html = `<div class="empty-state">${ICONS.error}<div class="empty-title">找不到 "${esc(name)}"</div><div class="empty-desc">名称不完全匹配</div></div>`;
+      // 选最匹配：精确 → 拆解法房号严格相等 → 教室名以输入开头 → 兜底首个
+      const _m = name.match(/^(\d+)[-—](\d+.*)$/);
+      const _rp = _m ? _m[2] : null;
+      const pick = sug.find(r => r.r === name)
+        || (_rp && sug.find(r => { const mm = r.r.match(/^(\d+)/); return mm && mm[1] === _rp; }))
+        || sug.find(r => r.r.startsWith(name))
+        || sug[0];
+      if (pick) {
+        resolvedName = pick.r;
+        foundBld = pick.b;
+        const rooms = (data[campus] || {})[foundBld] || {};
+        foundPeriods = rooms[resolvedName] || []; // 空 = 今天无空闲（全天占用/未排课）
+      }
+    }
+
+    // 3) 仍解析不出 → 真正的找不到，展示建议
+    if (!foundBld) {
+      const sug = await searchSuggestions(name, campus);
+      let html = `<div class="empty-state">${ICONS.error}<div class="empty-title">找不到 "${esc(name)}"</div><div class="empty-desc">名称不完全匹配，试试下面的建议</div></div>`;
       if (sug.length) {
         html += `<div style="margin-top:12px;"><div class="suggest-hint">是不是想找这些？点击可查：</div>`;
         for (const s of sug) {
@@ -682,40 +701,45 @@ async function queryClassroomSlots() {
       return;
     }
 
+    // 4) 渲染结果（foundPeriods 为空 = 今天无空闲时段）
     const allPeriods = getPeriods();
     const freeSet = new Set(foundPeriods);
     const totalPeriods = allPeriods.length;
 
-    // Slot chips
     let chips = '';
     for (const p of allPeriods) {
       chips += `<span class="slot-chip ${freeSet.has(p) ? 'free' : 'busy'}">${p}</span>`;
     }
 
     let html = `<div class="result-card">
-      <div class="room-name">${esc(name)}</div>
+      <div class="room-name">${esc(resolvedName)}</div>
       <div class="room-sub">${esc(selDate)} · ${esc(campus)}校区 · ${esc(foundBld)}</div>
       <div class="slot-bar">${chips}</div>
     </div>`;
 
-    const freeList = allPeriods.filter(p => freeSet.has(p));
-    const busyList = allPeriods.filter(p => !freeSet.has(p));
-
-    if (freeList.length) {
-      html += `<div class="detail-card free">
-        <div class="detail-head" style="color:#15803D;">空闲 (${freeList.length}/${totalPeriods})</div>
-        <div class="period-tags">
-          ${freeList.map(p => `<span class="period-tag free">第${p}节 ${index.periods[p]}</span>`).join('')}
-        </div>
-      </div>`;
-    }
-    if (busyList.length) {
+    if (foundPeriods.length === 0) {
       html += `<div class="detail-card busy">
-        <div class="detail-head" style="color:#DC2626;">占用 (${busyList.length}/${totalPeriods})</div>
-        <div class="period-tags">
-          ${busyList.map(p => `<span class="period-tag busy">第${p}节 ${index.periods[p]}</span>`).join('')}
-        </div>
+        <div class="detail-head" style="color:#DC2626;">今天无空闲时段（全天占用或未排课）</div>
       </div>`;
+    } else {
+      const freeList = allPeriods.filter(p => freeSet.has(p));
+      const busyList = allPeriods.filter(p => !freeSet.has(p));
+      if (freeList.length) {
+        html += `<div class="detail-card free">
+          <div class="detail-head" style="color:#15803D;">空闲 (${freeList.length}/${totalPeriods})</div>
+          <div class="period-tags">
+            ${freeList.map(p => `<span class="period-tag free">第${p}节 ${index.periods[p]}</span>`).join('')}
+          </div>
+        </div>`;
+      }
+      if (busyList.length) {
+        html += `<div class="detail-card busy">
+          <div class="detail-head" style="color:#DC2626;">占用 (${busyList.length}/${totalPeriods})</div>
+          <div class="period-tags">
+            ${busyList.map(p => `<span class="period-tag busy">第${p}节 ${index.periods[p]}</span>`).join('')}
+          </div>
+        </div>`;
+      }
     }
 
     R(html);
