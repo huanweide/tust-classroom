@@ -1,0 +1,49 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'static/**'
+      - '.github/workflows/pages-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build (copy static/ to artifact root)
+        run: |
+          mkdir _site
+          # Pages site root = static/ contents (main 分支已约定把静态资源放 static/)
+          cp -r static/. _site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Done
+        if: success()
+        run: |
+          echo ""
+          echo "✅ Pages 已部署"
+          echo "📱 手机访问: https://huanweide.github.io/tust-classroom/"
+          echo "⏱  通常 30 秒内 CDN 生效"

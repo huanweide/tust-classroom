@@ -13,8 +13,12 @@ STUDENT_ID = os.environ.get("TUST_SID", "")
 PASSWORD = os.environ.get("TUST_PWD", "")
 
 # ── 目标校区 ──
-CAMPUS_CODE = "02"  # 泰达校区
-CAMPUS_NAME = "泰达"
+# 设为 None 时,爬虫会自动发现 TUST 所有校区(默认行为,推荐)
+# 若想手动指定(例如只想爬某一个),把 None 改成具体的 code 和 name 即可
+#   CAMPUS_CODE = "02"   # 仅泰达
+#   CAMPUS_NAME = "泰达"
+CAMPUS_CODE = None  # None=自动发现(泰达 02 + 河西 01 等所有校区)
+CAMPUS_NAME = None
 
 # ── 节次时间表（13节）──
 PERIODS = {

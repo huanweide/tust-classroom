@@ -1,15 +1,22 @@
 <!-- badges -->
 [![License](https://img.shields.io/github/license/huanweide/tust-classroom)](LICENSE)
+[![Pages](https://img.shields.io/badge/在线访问-GitHub%20Pages-blue?logo=github)](https://huanweide.github.io/tust-classroom/)
 [![CI](https://github.com/huanweide/tust-classroom/actions/workflows/ci.yml/badge.svg)](https://github.com/huanweide/tust-classroom/actions/workflows/ci.yml)
-[![Private](https://img.shields.io/badge/仓库-私有-purple)](https://github.com/huanweide/tust-classroom)
+[![Public](https://img.shields.io/badge/仓库-公开-brightgreen)](https://github.com/huanweide/tust-classroom)
 [![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 <!-- /badges -->
 
 # TUST 空闲教室查询系统
 
-> 天津科技大学（TUST）教务系统空闲教室采集与查询工具 —— 复用本地浏览器登录态，自动爬取、本地存储、静态发布，随时查哪间教室有空。
+> 天津科技大学（TUST）教务系统空闲教室采集与查询工具 —— 复用本地浏览器登录态，自动爬取泰达 + 河西双校区教室，本地存储、静态发布，**手机浏览器随开随查**：[https://huanweide.github.io/tust-classroom/](https://huanweide.github.io/tust-classroom/)
 
-私有仓库，仅作者维护。本文档侧重功能概览与本地运行说明，不对外提供账号相关支持。
+公开仓库，欢迎 Star 反馈。
+
+## 在线访问（手机可用）
+
+**📱 直接打开：[https://huanweide.github.io/tust-classroom/](https://huanweide.github.io/tust-classroom/)**
+
+部署在 GitHub Pages，零后端、纯静态、PWA 可装到桌面/主屏如原生 App。手机浏览器访问即可用，不需要 VPN / 校园网。
 
 ## 隐私说明（必读）
 
@@ -33,12 +40,13 @@
 | 能力 | 说明 |
 |------|------|
 | 多模式查询 | 按节次查空闲 / 时间范围内连续空闲 / 查指定教室的全天空闲节次 |
-| 双校区覆盖 | 泰达校区 + 河西校区，自动发现并采集各校区教学楼 |
+| 双校区覆盖 | 泰达校区 + 河西校区，自动发现并采集各校区教学楼（默认全跑） |
 | 智能搜索 | 教室名模糊匹配，支持 `9-12` 这类「楼号-房号」拆解匹配与相似项推荐 |
 | 日期导航 | 支持按天偏移与日期区间批量爬取（例：未来 7 天 / 整学期） |
 | 13 节次时间表 | 内置完整节次与对应时间，前端直接展示空闲时间段 |
 | 本地 API | 提供 Flask 接口，便于二次开发与调试 |
-| 静态发布 | 一键导出为静态 JSON，配合 GitHub Pages / PWA 部署，零后端秒开 |
+| 静态发布 | 一键导出为静态 JSON，GitHub Actions 自动部署 Pages，零后端秒开 |
+| 自动刷新 | Windows 任务计划程序每小时抓一次+开机补跑，无需登录（`install_scheduler.bat` 一键安装） |
 | 会话保活 | 定时 ping 教务系统，避免 URP 会话空闲超时 |
 | 微信小程序 | 附 `wechat-mini/` 小程序版，移动端即用 |
 
@@ -90,7 +98,36 @@ python export_static.py
 git subtree push --prefix=static origin gh-pages
 ```
 
-也可直接使用 `auto_update.bat` 一键完成「爬取 → 导出 → 提交推送 → 发布 → 清理过期数据」。
+也可直接使用 `auto_update.bat` 一键完成「爬取 → 导出 → 提交推送 → 清理过期数据」（Pages 部署由 GitHub Actions 自动接管）。
+
+## 一键自动化部署（推荐）
+
+如果你想「**电脑开着就自动跑，无需登录系统**」，双击 `install_scheduler.bat`（右键管理员身份运行）。它会：
+
+- 注册 Windows 任务计划程序，每 **60 分钟**自动运行一次 `auto_update.bat`
+- 开机时自动补跑一次
+- 不弹黑窗 / 不阻塞 / 不抢桌面
+- 任何时段想停止：双击 `uninstall_scheduler.bat`
+
+完整数据流：
+
+```
+[任务计划 60min 触发]
+     ↓
+[本机 Edge + Playwright CDP 复用登录态]
+     ↓
+[crawler_playwright.py 抓取泰达+河西双校区未来 7 天]
+     ↓
+[SQLite 写入 data/classrooms.db]
+     ↓
+[export_static.py 压缩导出 static/data/*.json]
+     ↓
+[git commit + push main 分支]
+     ↓
+[GitHub Actions 自动同步 static/ → GitHub Pages]
+     ↓
+[📱 手机浏览器立即可见]
+```
 
 URP 会话保活（配合 Windows 任务计划每 25 分钟触发）：
 
@@ -140,17 +177,23 @@ python keepalive.py --once
 
 ```
 tust-classroom/
-├── crawler_playwright.py   # CDP 爬虫（核心，复用 Edge 登录态）
+├── crawler_playwright.py   # CDP 爬虫（核心,复用 Edge 登录态,自动发现双校区）
 ├── export_static.py        # SQLite → 静态 JSON 导出
-├── keepalive.py            # URP 会话保活
-├── app.py                  # Flask 本地查询 API
-├── config.py               # 配置文件（含环境变量读取）
-├── auto_update.bat         # 一键更新与发布脚本
+├── keepalive.py            # URP 会话保活（每 25 分钟重置空闲倒计时）
+├── app.py                  # Flask 本地查询 API（127.0.0.1:5000）
+├── config.py               # 配置文件（含环境变量读取、双校区配置）
+├── auto_update.bat         # 一键更新脚本(爬取→导出→提交→清理)
+├── install_scheduler.bat   # 一键注册 Windows 任务计划程序(每小时自动跑)
+├── uninstall_scheduler.bat # 一键卸载任务计划
+├── keepalive_task.bat      # 保活任务(由 schtasks 触发)
+├── .github/workflows/
+│   ├── ci.yml              # 语法/lint 检查
+│   └── pages-deploy.yml    # main 分支 push 自动部署 Pages
 ├── static/                 # PWA 前端与静态数据
 │   ├── index.html          # 前端页面
 │   ├── manifest.json       # PWA 清单
 │   ├── sw.js               # Service Worker（离线可用）
-│   └── data/               # 导出的静态 JSON
+│   └── data/               # 导出的静态 JSON（自动生成）
 ├── wechat-mini/            # 微信小程序版
 └── data/                   # 本地数据库与日志（*.db 已被 .gitignore 忽略）
 ```
