@@ -199,7 +199,7 @@ class TUSTCrawlerPW:
     def _get_buildings(self, page, campus_code):
         """获取某校区所有教学楼"""
         result = page.evaluate(
-            """(campus_code) => {
+            """async (campus_code) => {
                 const formData = new URLSearchParams();
                 formData.append('xqh', campus_code);
                 const resp = await fetch('/student/teachingResources/freeClassroom/queryCodeTeaBuildingList', {
@@ -227,7 +227,7 @@ class TUSTCrawlerPW:
         """设置当前查询的教学楼上下文"""
         try:
             result = page.evaluate(
-                """(args) => {
+                """async (args) => {
                     const formData = new URLSearchParams();
                     formData.append('position', args.position);
                     formData.append('xqm', args.xqm);
@@ -247,7 +247,7 @@ class TUSTCrawlerPW:
     def _fetch_period(self, page, period, building_name, dayoffset):
         """查询某个节次的空闲教室"""
         result = page.evaluate(
-            """(args) => {
+            """async (args) => {
                 try {
                     const resp = await fetch(
                         '/student/teachingResources/freeClassroom/today/' + args.period,
