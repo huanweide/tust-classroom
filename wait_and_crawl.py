@@ -99,10 +99,10 @@ def main():
         log(f"  {line}")
 
     # ── 提交推送 ──
-    log("[推送] git commit + push...")
+    log("[推送] git commit + push main...")
     subprocess.run(["git", "add", "static/"], capture_output=True)
     c = subprocess.run(
-        ["git", "commit", "-m", f"auto: full-semester data update {datetime.now():%Y-%m-%d}"],
+        ["git", "commit", "-m", f"auto: 空闲教室全学期数据 {datetime.now():%Y-%m-%d}"],
         capture_output=True, text=True,
     )
     if "nothing to commit" in (c.stdout + c.stderr):
@@ -110,9 +110,28 @@ def main():
     else:
         pr = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True)
         if pr.returncode != 0:
-            log(f"[错误] push 失败: {(pr.stderr or '')[:200]}")
+            log(f"[错误] push main 失败: {(pr.stderr or '')[:200]}")
             sys.exit(1)
-        log("[推送] main 已推送,Pages 1-2 分钟内生效")
+        log("[推送] main 已推送")
+
+    # ── 更新 GitHub Pages (gh-pages 仅存静态快照, force 推送安全) ──
+    log("[推送] 拆分 static 子树并更新 GitHub Pages...")
+    sp = subprocess.run(
+        ["git", "subtree", "split", "--prefix=static", "HEAD"],
+        capture_output=True, text=True,
+    )
+    sha = sp.stdout.strip()
+    if sha:
+        gpr = subprocess.run(
+            ["git", "push", "origin", f"{sha}:refs/heads/gh-pages", "--force"],
+            capture_output=True, text=True,
+        )
+        if gpr.returncode != 0:
+            log(f"[警告] gh-pages 推送失败: {(gpr.stderr or '')[:200]}")
+        else:
+            log("[推送] GitHub Pages 已更新, 手机端 1-2 分钟内生效")
+    else:
+        log("[警告] subtree split 失败, 未更新 Pages")
 
     log("=== 全部完成! 手机访问: https://huanweide.github.io/tust-classroom/ ===")
 

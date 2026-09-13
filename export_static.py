@@ -31,8 +31,10 @@ def export():
         conn.row_factory = sqlite3.Row
 
         # ── 1. 元数据索引 ──
+        # 泰达校区默认排第一（用户要求默认校区为泰达）
         campuses = [r[0] for r in conn.execute(
-            "SELECT DISTINCT campus_name FROM free_rooms ORDER BY campus_name"
+            "SELECT DISTINCT campus_name FROM free_rooms "
+            "ORDER BY CASE WHEN campus_name='泰达' THEN 0 ELSE 1 END, campus_name"
         )]
         dates = [r[0] for r in conn.execute(
             "SELECT DISTINCT date FROM free_rooms ORDER BY date"

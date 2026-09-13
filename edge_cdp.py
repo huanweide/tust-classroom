@@ -65,6 +65,16 @@ def ensure_edge_debug():
     _launching = True
     try:
         print("[CDP] Edge 调试实例未运行，正在启动专用 Profile...")
+        # 清理残留 Edge 进程：沙箱回收长任务时会遗留 msedge 实例，
+        # 累积占用资源会导致新拉起的 Edge 立即崩溃(TargetClosedError)。
+        try:
+            subprocess.run(
+                ["taskkill", "/F", "/IM", "msedge.exe"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10,
+            )
+        except Exception:
+            pass
+        time.sleep(1)  # 等残留进程退出释放资源
         os.makedirs(EDGE_USER_DATA, exist_ok=True)
         subprocess.Popen(
             [

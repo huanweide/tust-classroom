@@ -62,7 +62,7 @@ class TUSTCrawlerPW:
                    连续 STOP_THRESHOLD 天无数据即判定学期边界并停止。
                    同时自动清除「今天之前」的旧学期数据，只保留本次爬取。
         """
-        MAX_DAYS = 140          # 自动模式天数上限：覆盖当前秋季学期(9月~次年1月底)
+        MAX_DAYS = 130          # 自动模式天数上限：覆盖当前秋季学期(9月~次年1月底)
         STOP_THRESHOLD = 14     # 连续无数据天数阈值（容忍国庆等长假期）
 
         if auto:
@@ -322,6 +322,8 @@ if __name__ == "__main__":
                         help="日期范围，如 '0-6' 表示今天到6天后（共7天）")
     parser.add_argument("--dayoffset", type=int, default=1,
                         help="单天偏移，默认1=明天")
+    parser.add_argument("--auto", action="store_true",
+                        help="自动边界探测：从今天爬到连续无数据(学期结束)即停")
     args = parser.parse_args()
 
     crawler = TUSTCrawlerPW()
@@ -343,6 +345,8 @@ if __name__ == "__main__":
                   file=sys.stderr)
             sys.exit(2)
         total = crawler.run(day_range=(start, end))
+    elif args.auto:
+        total = crawler.run(auto=True)
     else:
         total = crawler.run(dayoffset=args.dayoffset)
     print(f"\n完成! 共 {total} 条空闲教室记录")
