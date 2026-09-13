@@ -5,5 +5,5 @@ REM 路径自动定位本脚本所在目录
 
 cd /d "%~dp0"
 
-REM 用 pythonw.exe 避免弹出控制台窗口
-pythonw keepalive.py --once 2>&1
+REM 用 pythonw.exe 避免弹出控制台窗口（playwright 装在系统 Python 3.14）
+"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\pythonw.exe" keepalive.py --once 2>&1

@@ -2,16 +2,28 @@
 
 统一常量定义、调试端口探测与启动逻辑，供 crawler_playwright.py 与
 keepalive.py 复用，避免两文件各写一份常量与探测代码。
+
+⚠ 新版 Edge（Chromium 136+）安全限制：
+   DevTools 远程调试端口不允许绑定「默认 User Data 目录」，
+   报错 "DevTools remote debugging requires a non-default data directory"。
+   因此本项目改用专用 Profile 目录 edge-cdp-profile —— 首次使用时在
+   该窗口中登录一次 URP，登录态持久化在专用目录里，之后爬虫/保活
+   自动复用，不再依赖日常使用的 Edge Profile。
 """
 import os
 import subprocess
 import time
 import urllib.request
 
-EDGE_USER_DATA = os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\User Data")
+# 专用 CDP Profile 目录（非默认目录，绕开新版 Edge 调试端口安全限制）
+EDGE_USER_DATA = os.path.expandvars(
+    r"%LOCALAPPDATA%\tust-classroom\edge-cdp-profile"
+)
 EDGE_EXE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+URP_LOGIN_URL = "http://jwxtxs.tust.edu.cn:46110"
 DEBUG_PORT = 9222
-CDP_ENDPOINT = f"http://localhost:{DEBUG_PORT}"
+# 明确用 IPv4 回环地址,避免 Playwright(Node) 把 localhost 解析到 ::1 导致连不上
+CDP_ENDPOINT = f"http://127.0.0.1:{DEBUG_PORT}"
 
 # 进程内单实例保护：避免同一进程内并发重复拉起调试实例
 _launching = False
@@ -36,10 +48,10 @@ def _wait_ready(timeout=15):
 
 
 def ensure_edge_debug():
-    """确保 Edge 以调试模式运行（单实例保护），复用用户 Profile。
+    """确保 Edge 以调试模式运行（单实例保护），复用专用 Profile。
 
     - 端口已就绪：直接返回 True（不重复拉起）。
-    - 端口不可用：先给出保存提醒，再拉起一个带调试端口的 Edge 实例并等待就绪。
+    - 端口不可用：拉起一个带调试端口的专用 Profile Edge 实例并等待就绪。
     - 单实例保护：端口不可用时才启动；进程内用 _launching 锁避免并发重复启动。
     """
     global _launching
@@ -52,10 +64,8 @@ def ensure_edge_debug():
 
     _launching = True
     try:
-        print("[CDP] Edge 未以调试模式运行，正在启动...")
-        print("      ⚠ 请保存 Edge 中未完成的表单/文档，5 秒后自动重启")
-        time.sleep(5)
-
+        print("[CDP] Edge 调试实例未运行，正在启动专用 Profile...")
+        os.makedirs(EDGE_USER_DATA, exist_ok=True)
         subprocess.Popen(
             [
                 EDGE_EXE,
