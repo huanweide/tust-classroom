@@ -13,7 +13,7 @@
 <meta name="keywords" content="天津科技大学,空闲教室,TUST,泰达校区,河西校区,教室查询,课表,自习">
 <meta name="author" content="huanweide">
 <meta property="og:title" content="TUST 空闲教室 — 天津科技大学教室查询">
-<meta property="og:description" content="泰达+河西双校区空闲教室实时查询，三种查询模式，40天数据覆盖。">
+<meta property="og:description" content="泰达+河西双校区空闲教室实时查询，三种查询模式，覆盖整个学期约130天数据。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://huanweide.github.io/tust-classroom/">
 <meta property="og:site_name" content="TUST 空闲教室">
@@ -330,6 +330,10 @@ async function init() {
   document.getElementById('sel-campus').innerHTML =
     index.campuses.map(c => `<option>${c}</option>`).join('');
   document.getElementById('sel-campus').onchange = onCampusChange;
+  // 默认校区：泰达（用户要求）
+  if (index.campuses.includes('泰达')) {
+    document.getElementById('sel-campus').value = '泰达';
+  }
 
   // Period selectors
   const periodOpts = Object.entries(index.periods).map(([p, t]) =>
