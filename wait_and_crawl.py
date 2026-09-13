@@ -78,9 +78,9 @@ def main():
         browser.close()
 
     # ── 爬取全学期 40 天 ──
-    log("[爬取] 开始爬取全学期 40 天数据(双校区)...")
+    log("[爬取] 自动边界探测：从今天爬到连续无数据(学期结束)即停(双校区)...")
     r = subprocess.run(
-        [sys.executable, "crawler_playwright.py", "--range", "0-39"],
+        [sys.executable, "crawler_playwright.py", "--auto"],
         capture_output=True, text=True,
     )
     tail = (r.stdout or "").strip().splitlines()[-5:]

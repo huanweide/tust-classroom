@@ -52,15 +52,30 @@ class TUSTCrawlerPW:
         """确保 Edge 以调试模式运行，复用用户 Profile（委托 edge_cdp.ensure_edge_debug）"""
         return ensure_edge_debug()
 
-    def run(self, date_str=None, dayoffset=1, day_range=None):
+    def run(self, date_str=None, dayoffset=1, day_range=None, auto=False):
         """爬取空闲教室
 
         dayoffset: 单天模式，相对今天的天数偏移（默认 1=明天）
         day_range: 范围模式，(start, end)，如 (0, 6) = 今天~6天后
                    指定后覆盖 dayoffset
+        auto:      自动边界探测模式，从今天(dayplus=0)往后爬，
+                   连续 STOP_THRESHOLD 天无数据即判定学期边界并停止。
+                   同时自动清除「今天之前」的旧学期数据，只保留本次爬取。
         """
+        MAX_DAYS = 140          # 自动模式天数上限：覆盖当前秋季学期(9月~次年1月底)
+        STOP_THRESHOLD = 14     # 连续无数据天数阈值（容忍国庆等长假期）
+
+        if auto:
+            # 清掉今天之前的旧学期数据，只保留「本次爬取」（删旧留新）
+            today = datetime.now().strftime("%Y-%m-%d")
+            with sqlite3.connect(config.DB_PATH) as conn:
+                conn.execute("DELETE FROM free_rooms WHERE date < ?", (today,))
+            print(f"[清旧] 已删除 {today} 之前的旧学期数据")
+
         if day_range is not None:
             offsets = list(range(day_range[0], day_range[1] + 1))
+        elif auto:
+            offsets = list(range(0, MAX_DAYS))
         else:
             offsets = [dayoffset]
 
@@ -107,6 +122,7 @@ class TUSTCrawlerPW:
                     d = date_str
                 else:
                     d = (datetime.now() + timedelta(days=dayoff)).strftime("%Y-%m-%d")
+                day_begin = total
 
                 print(f"\n{'#'*50}")
                 print(f"# 日期 [{day_idx+1}/{len(offsets)}] {d} (dayoffset={dayoff})")

@@ -20,6 +20,13 @@ OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "da
 
 def export():
     os.makedirs(OUT_DIR, exist_ok=True)
+    # 清理旧的每日 JSON，只保留本次导出的数据（删旧留新）
+    for _f in os.listdir(OUT_DIR):
+        if _f.endswith(".json"):
+            try:
+                os.remove(os.path.join(OUT_DIR, _f))
+            except OSError:
+                pass
     with sqlite3.connect(config.DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
 
