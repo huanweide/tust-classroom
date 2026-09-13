@@ -43,7 +43,12 @@ if %ERRORLEVEL% NEQ 0 (
     echo push main 失败,查看 %LOGFILE%
     exit /b 1
 )
-REM static/ 现在由 GitHub Actions 自动同步到 gh-pages,不再需要本地 subtree push
+git subtree push --prefix=static origin gh-pages >> %LOGFILE% 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo [%date% %time%] push gh-pages 失败! exit=%ERRORLEVEL% >> %LOGFILE%
+    echo push gh-pages 失败,查看 %LOGFILE%
+    exit /b 1
+)
 
 REM ── Step 4: 清理过期数据(保留最近30天)──
 echo [%date% %time%] Step 4/4: 清理旧数据...
