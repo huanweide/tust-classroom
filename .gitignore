@@ -4,9 +4,18 @@ data/classrooms.db
 data/browser_profile/
 .env
 *.log
-*.pyc
 data/cookies.txt
 cloudflared.exe
+
+# 微信开发者工具：本地私有配置与调试产物（不应入库）
+wechat-mini/project.private.config.json
+wechat-mini/sourcemap.zip
+
+# 微信小程序云函数依赖
+wechat-mini/cloudfunctions/**/node_modules/
+
+# Node 依赖（E2E 测试用）
+node_modules/
 
 # 端到端测试产物（截图/结果，测试脚本本身入库）
 e2e_shots/
