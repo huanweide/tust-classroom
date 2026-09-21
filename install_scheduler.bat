@@ -44,6 +44,22 @@ if %ERRORLEVEL% NEQ 0 (
     echo [警告] ONSTART 触发器注册失败,主任务已生效,不影响核心功能
 )
 
+REM ── 注册 URP 会话保活任务(每25分钟,防 CAS 空闲超时导致爬虫失败) ──
+REM 关键修复: 旧版 install_scheduler.bat 漏注册保活任务,导致 URP 会话空闲超时后
+REM 自动更新每小时都 sys.exit(1) 失败。此处一并注册,确保会话常驻。
+set KEEPALIVE_TASK=TUST_Classroom_KeepAlive
+schtasks /Query /TN "%KEEPALIVE_TASK%" >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo [提示] 保活任务 %KEEPALIVE_TASK% 已存在,先删除再重建...
+    schtasks /Delete /TN "%KEEPALIVE_TASK%" /F >nul 2>&1
+)
+schtasks /Create /TN "%KEEPALIVE_TASK%" /TR "\"%~dp0keepalive_task.bat\"" /SC MINUTE /MO 25 /F >nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [警告] 保活任务注册失败,URP 会话可能超时,建议手动注册 keepalive_task.bat
+) else (
+    echo [OK] 保活任务已注册: 每 25 分钟 ping 一次 URP
+)
+
 echo.
 echo ═══════════════════════════════════════════
 echo ✅ 安装完成!
