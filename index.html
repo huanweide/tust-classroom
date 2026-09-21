@@ -170,6 +170,39 @@ input[type="text"]:focus, select:focus { outline: none; border-color: var(--prim
   font-size: 11px; font-weight: 500; color: var(--text-secondary);
 }
 
+/* Data Status Bar */
+.status-bar {
+  display: flex; align-items: center; gap: 8px; justify-content: center;
+  font-size: 12px; padding: 8px 14px; border-radius: var(--radius-sm);
+  margin-bottom: 14px; line-height: 1.5; text-align: center;
+}
+.status-bar.ok { background: var(--green-bg); border: 1px solid var(--green-border); color: #15803D; }
+.status-bar.warn { background: #FEF3C7; border: 1px solid #FCD34D; color: #B45309; }
+.status-bar .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* PWA Install Prompt */
+.install-bar {
+  display: none; align-items: center; gap: 10px;
+  background: var(--card); border: 1px solid var(--primary-border);
+  border-radius: var(--radius); padding: 12px 14px; margin-bottom: 14px;
+}
+.install-bar .txt { flex: 1; font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; }
+.install-bar .txt b { color: var(--text); font-weight: 600; }
+.install-bar button {
+  flex-shrink: 0; font-family: inherit; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; border-radius: 6px; padding: 7px 13px; transition: all 0.15s;
+}
+.install-bar .go { background: var(--primary); color: #fff; border: none; }
+.install-bar .go:hover { background: var(--primary-hover); }
+.install-bar .no { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.install-bar .no:hover { background: var(--bg); }
+
+/* Footer · 三项说明 */
+.footer .notes { margin-top: 14px; text-align: left; display: inline-block; font-size: 11.5px; line-height: 2; max-width: 100%; }
+.footer .notes .n { color: var(--text-muted); }
+.footer .notes .n b { color: var(--text-secondary); font-weight: 600; }
+.footer .brand { margin-top: 14px; opacity: 0.7; font-size: 11.5px; }
+
 /* Responsive */
 @media (max-width: 400px) {
   .row-2, .row-3 { grid-template-columns: 1fr; }
@@ -186,6 +219,18 @@ input[type="text"]:focus, select:focus { outline: none; border-color: var(--prim
   <div class="header">
     <h1>TUST 空闲教室</h1>
     <div class="subtitle">天津科技大学 · 泰达 + 河西 · <span id="update-time">加载中...</span></div>
+  </div>
+
+  <!-- Data Freshness -->
+  <div class="status-bar ok" id="status-bar" style="display:none">
+    <span class="dot"></span><span id="status-text"></span>
+  </div>
+
+  <!-- PWA Install Prompt -->
+  <div class="install-bar" id="install-bar">
+    <div class="txt"><b>装到手机桌面</b>，像 App 一样一点就开，不用每次找链接。</div>
+    <button class="go" id="install-go">添加</button>
+    <button class="no" id="install-no">暂不</button>
   </div>
 
   <!-- Campus -->
@@ -263,22 +308,26 @@ input[type="text"]:focus, select:focus { outline: none; border-color: var(--prim
   <!-- Footer -->
   <div class="footer">
     <div class="badges">
-      <span class="badge">📡 URP教务系统</span>
-      <span class="badge">🔄 每周自动更新</span>
-      <span class="badge">📱 PWA 可安装</span>
-      <span class="badge" id="badge-update" style="display:none;background:#FEF3C7;border-color:#FCD34D;color:#B45309;cursor:pointer;" onclick="location.reload()">🆕 有新数据！点击刷新</span>
+      <span class="badge">URP 教务系统</span>
+      <span class="badge">泰达 + 河西</span>
+      <span class="badge">PWA 可安装</span>
+      <span class="badge" id="badge-update" style="display:none;background:#FEF3C7;border-color:#FCD34D;color:#B45309;cursor:pointer;" onclick="location.reload()">有新数据 · 点击刷新</span>
     </div>
-    <div style="margin-top:8px;">
-      数据更新于 <span id="footer-update">--</span> ·
-      <a href="https://github.com/huanweide/tust-classroom" target="_blank" rel="noopener">GitHub</a> ·
+
+    <div style="margin-top:10px;">
+      <a href="https://github.com/huanweide/tust-classroom" target="_blank" rel="noopener">源码仓库</a> ·
       <a href="https://github.com/huanweide/tust-classroom/releases" target="_blank" rel="noopener">发行版</a> ·
-      <a href="https://github.com/huanweide/tust-classroom/releases/latest" target="_blank" rel="noopener">v2.0.0</a>
+      <a href="https://github.com/huanweide/tust-classroom/archive/gh-pages.zip">下载离线版</a>
     </div>
-    <div style="margin-top:6px;">
-      <a href="https://github.com/huanweide/tust-classroom/archive/gh-pages.zip">📥 下载离线版</a>
+
+    <div class="notes">
+      <div class="n"><b>1 · 作者</b>　<a href="https://github.com/huanweide" target="_blank" rel="noopener">ReTri · 樊斯瑞</a> · github.com/huanweide</div>
+      <div class="n"><b>2 · 开源</b>　<a href="https://github.com/huanweide/tust-classroom" target="_blank" rel="noopener">huanweide/tust-classroom</a> · MIT License · 欢迎 Star / Fork</div>
+      <div class="n"><b>3 · 数据</b>　数据来自天津科技大学 URP 教务系统，本工具<b>非官方</b>；课程与教室安排可能临时调整，请以教务处通知为准</div>
     </div>
-    <div style="margin-top:6px;opacity:0.7;">
-      天津科技大学 空闲教室查询系统 · 泰达 & 河西 · 非官方
+
+    <div class="brand">
+      © 2026 ReTri · 樊斯瑞 · 天津科技大学空闲教室查询（泰达 &amp; 河西）
     </div>
   </div>
 
@@ -315,6 +364,99 @@ const ICONS = {
 let _ready = false;
 
 // ═══════════════════════════════════════
+// Data Freshness
+// ═══════════════════════════════════════
+function renderFreshness(today, firstDate, lastDate, totalDays) {
+  const bar = document.getElementById('status-bar');
+  const txt = document.getElementById('status-text');
+  if (!bar || !txt) return;
+
+  let ok = true, msg = '';
+  if (!totalDays) {
+    ok = false;
+    msg = '暂未获取到可用数据，请稍后重试';
+  } else if (today < firstDate) {
+    ok = false;
+    msg = `数据自 ${firstDate} 起，尚未覆盖今天`;
+  } else if (today > lastDate) {
+    ok = false;
+    msg = `数据截至 ${lastDate}，未覆盖今天，请以教务处为准`;
+  } else {
+    msg = `已覆盖今天 · 共 ${totalDays} 天（${firstDate} ~ ${lastDate}）`;
+  }
+
+  // 若导出脚本提供了抓取时间戳，追加「最后更新」信息
+  if (index && index.generated_at) {
+    const gen = String(index.generated_at).slice(0, 10);
+    const days = Math.floor((Date.now() - new Date(index.generated_at).getTime()) / 864e5);
+    if (days >= 7) {
+      ok = false;
+      msg += ` · 已 ${days} 天未更新（最后 ${gen}）`;
+    } else {
+      msg += ` · 最后更新 ${gen}`;
+    }
+  }
+
+  txt.textContent = msg;
+  bar.className = 'status-bar ' + (ok ? 'ok' : 'warn');
+  bar.style.display = '';
+}
+
+// ═══════════════════════════════════════
+// PWA 安装引导
+// ═══════════════════════════════════════
+(function setupInstallPrompt() {
+  const bar = document.getElementById('install-bar');
+  const btnGo = document.getElementById('install-go');
+  const btnNo = document.getElementById('install-no');
+  if (!bar || !btnGo || !btnNo) return;
+
+  // 已安装（独立窗口）或用户已拒绝过 → 不打扰
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;
+  try { if (localStorage.getItem('tust_install_dismissed')) return; } catch (e) {}
+
+  const dismiss = () => {
+    bar.style.display = 'none';
+    try { localStorage.setItem('tust_install_dismissed', '1'); } catch (e) {}
+  };
+
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferred = e;
+    const txt = bar.querySelector('.txt');
+    if (txt) {
+      txt.innerHTML = isMobile
+        ? '<b>装到手机桌面</b>，像 App 一样一点就开，不用每次找链接。'
+        : '<b>装到桌面</b>，像 App 一样一点就开，不用每次找链接。';
+    }
+    bar.style.display = 'flex';
+  });
+
+  // iOS Safari 不支持 beforeinstallprompt，改为文字引导
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (isIOS) {
+    bar.querySelector('.txt').innerHTML =
+      '<b>装到手机桌面</b>：点底部「分享」→「添加到主屏幕」，之后像 App 一样一点就开。';
+    btnGo.style.display = 'none';
+    setTimeout(() => { if (bar.style.display !== 'flex') bar.style.display = 'flex'; }, 2500);
+  }
+
+  btnGo.onclick = async () => {
+    if (!deferred) return;
+    deferred.prompt();
+    const { outcome } = await deferred.userChoice;
+    deferred = null;
+    bar.style.display = 'none';
+    if (outcome !== 'accepted') dismiss();
+  };
+
+  btnNo.onclick = dismiss;
+})();
+
+// ═══════════════════════════════════════
 // Init
 // ═══════════════════════════════════════
 async function init() {
@@ -345,18 +487,25 @@ async function init() {
   const lastP = Object.keys(index.periods).pop();
   document.getElementById('sel-end').value = lastP;
 
-  // Update time
-  document.getElementById('update-time').textContent = '更新于 ' + index.updated;
-  document.getElementById('footer-update').textContent = index.updated;
+  // ═══ 数据覆盖范围与新鲜度 ═══
+  // 注意：index.updated = max(dates)，语义是「数据覆盖到最后一天」，并非抓取时间
+  const allDates = index.dates || [];
+  const firstDate = allDates[0] || '';
+  const lastDate = allDates[allDates.length - 1] || index.updated || '';
+  const today = new Date().toISOString().slice(0, 10);
 
-  // Update detection: compare with last seen version
+  document.getElementById('update-time').textContent = `覆盖 ${firstDate} ~ ${lastDate}`;
+
+  renderFreshness(today, firstDate, lastDate, allDates.length);
+
+  // 更新检测：与上次访问记录的覆盖终点比对
   (function checkUpdate() {
     try {
       const last = localStorage.getItem('tust_data_updated');
-      if (last && last !== index.updated) {
+      if (last && last !== lastDate) {
         document.getElementById('badge-update').style.display = '';
       }
-      localStorage.setItem('tust_data_updated', index.updated);
+      localStorage.setItem('tust_data_updated', lastDate);
     } catch(e) { /* localStorage may be blocked */ }
   })();
 
