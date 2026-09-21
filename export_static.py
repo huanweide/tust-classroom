@@ -12,6 +12,7 @@ import os
 import sqlite3
 import sys
 from collections import defaultdict
+from datetime import datetime
 
 import config
 
@@ -52,6 +53,8 @@ def export():
             "buildings": buildings_by_campus,
             "periods": {str(k): v for k, v in sorted(config.PERIODS.items())},
             "updated": max(dates) if dates else "",
+            # 导出时刻（数据发布/抓取时间），供前端判断数据新鲜度
+            "generated_at": datetime.now().isoformat(timespec="seconds"),
         }
         with open(os.path.join(OUT_DIR, "index.json"), "w", encoding="utf-8") as f:
             json.dump(index, f, ensure_ascii=False, indent=2)
