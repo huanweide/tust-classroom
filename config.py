@@ -1,8 +1,19 @@
-"""TUST 教务系统空闲教室查询 — 配置文件"""
+"""TUST 配置 —— 兼容层（v2 起改由 adapters/tust.py 提供真值）
+
+为什么还留这个文件：
+    项目从「单校脚本」升级成「多校框架」后，原先散落在 config.py 里的
+    TUST 常量统一搬到了 adapters/tust.py。但作者本机的 Windows 任务计划、
+    auto_update.bat、以及第三方二次开发代码可能还在 import 这些名字，
+    所以这里保留一份「只读视图」，值全部从适配器派生，不repeat定义。
+
+⚠ 不要在这个文件里新增学校专属常量 —— 请改 adapters/tust.py。
+"""
 import os
 
+from adapters.tust import BASE_URL, PERIODS  # 单一真值来源
+
 # ── 教务系统 ──
-BASE_URL = "http://jwxtxs.tust.edu.cn:46110"
+BASE_URL = BASE_URL
 LOGIN_PAGE = f"{BASE_URL}/"
 CAMPUS_LIST_API = f"{BASE_URL}/student/teachingResources/freeClassroom/queryCodeCampusList"
 BUILDING_LIST_API = f"{BASE_URL}/student/teachingResources/freeClassroom/queryCodeTeaBuildingList"
@@ -12,22 +23,12 @@ FREE_ROOM_API = f"{BASE_URL}/student/teachingResources/freeClassroom/today"  # �
 STUDENT_ID = os.environ.get("TUST_SID", "")
 PASSWORD = os.environ.get("TUST_PWD", "")
 
-# ── 目标校区 ──
-# 设为 None 时,爬虫会自动发现 TUST 所有校区(默认行为,推荐)
-# 若想手动指定(例如只想爬某一个),把 None 改成具体的 code 和 name 即可
-#   CAMPUS_CODE = "02"   # 仅泰达
-#   CAMPUS_NAME = "泰达"
-CAMPUS_CODE = None  # None=自动发现(泰达 02 + 河西 01 等所有校区)
+# ── 目标校区（None = 自动发现全部校区）──
+CAMPUS_CODE = None
 CAMPUS_NAME = None
 
-# ── 节次时间表（13节）──
-PERIODS = {
-    1:  "08:20-09:05", 2:  "09:15-10:00", 3:  "10:20-11:05",
-    4:  "11:15-12:00", 5:  "13:30-14:15", 6:  "14:25-15:10",
-    7:  "15:25-16:10", 8:  "16:20-17:05", 9:  "17:15-18:00",
-    10: "18:30-19:15", 11: "19:25-20:10", 12: "20:25-21:10",
-    13: "21:20-22:05"
-}
+# ── 节次时间表（13 节）──
+PERIODS = PERIODS
 
 # ── SQLite 路径 ──
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "classrooms.db")

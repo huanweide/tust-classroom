@@ -1,17 +1,34 @@
-"""TUST 空闲教室查询 API — Flask 后端"""
+"""空闲教室查询 API — Flask 后端（v2：由 campusfree 驱动，换学校只改环境变量）
+
+默认服务天津科技大学（tust）。想切到别的学校：
+    set CAMPUSFREE_SCHOOL=nku   (Windows) / export CAMPUSFREE_SCHOOL=nku  (Mac/Linux)
+    python app.py
+"""
+import os
+import re
 import sqlite3
 
 from flask import Flask, jsonify, request, send_from_directory
 
-import config
-import re
+from campusfree.registry import get_adapter
+
+# ── 当前服务的学校（可由环境变量切换）──
+SCHOOL_ID = os.environ.get("CAMPUSFREE_SCHOOL", "tust")
+_ADAPTER = get_adapter(SCHOOL_ID)
+PERIODS = _ADAPTER.profile.periods
+DEFAULT_CAMPUS = _ADAPTER.profile.default_campus or ""
+
+_ROOT = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(
+    _ROOT, "data", "classrooms.db" if SCHOOL_ID == "tust" else f"{SCHOOL_ID}.db"
+)
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 
 
 def query_db(sql, params=()):
     """执行查询并返回 dict 列表"""
-    with sqlite3.connect(config.DB_PATH) as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
         rows = conn.execute(sql, params).fetchall()
         return [dict(r) for r in rows]
@@ -29,7 +46,7 @@ def api_campuses():
 @app.route("/api/buildings")
 def api_buildings():
     """获取某校区所有教学楼 ?campus=泰达"""
-    campus = request.args.get("campus", config.CAMPUS_NAME)
+    campus = request.args.get("campus", DEFAULT_CAMPUS)
     rows = query_db(
         "SELECT DISTINCT building_name FROM free_rooms "
         "WHERE campus_name = ? ORDER BY building_name",
@@ -40,9 +57,13 @@ def api_buildings():
 
 @app.route("/api/periods")
 def api_periods():
-    """获取所有节次及其时间"""
+    """获取所有节次及其时间
+
+    字段名统一为 time_range（与 /api/free-rooms 保持一致）。
+    早期版本这里返回的是 time，两个接口不一致，已统一。
+    """
     return jsonify([
-        {"period": k, "time": v} for k, v in sorted(config.PERIODS.items())
+        {"period": k, "time_range": v} for k, v in sorted(PERIODS.items())
     ])
 
 
@@ -60,7 +81,7 @@ def api_free_rooms():
     """
     date = request.args.get("date", "")
     period = request.args.get("period", "")
-    campus = request.args.get("campus", config.CAMPUS_NAME)
+    campus = request.args.get("campus", DEFAULT_CAMPUS)
     building = request.args.get("building", "")
 
     sql = """
@@ -89,7 +110,7 @@ def api_free_rooms():
 
     rows = query_db(sql, params)
     for r in rows:
-        r["time_range"] = config.PERIODS.get(r["period"], "")
+        r["time_range"] = PERIODS.get(r["period"], "")
 
     return jsonify(rows)
 
@@ -211,7 +232,7 @@ def api_classroom_slots(name):
     ?date=2026-05-23&campus=泰达
     """
     date = request.args.get("date", "")
-    campus = request.args.get("campus", config.CAMPUS_NAME)
+    campus = request.args.get("campus", DEFAULT_CAMPUS)
 
     if not date:
         return jsonify({"error": "需要 date 参数"}), 400
@@ -274,12 +295,12 @@ def api_classroom_slots(name):
 
     free_set = {r["period"] for r in free_rows}
     free_periods = [
-        {"period": p, "time_range": config.PERIODS[p]}
+        {"period": p, "time_range": PERIODS[p]}
         for p in sorted(free_set)
     ]
     busy_periods = [
         {"period": p, "time_range": t}
-        for p, t in config.PERIODS.items()
+        for p, t in PERIODS.items()
         if p not in free_set
     ]
 
@@ -290,7 +311,7 @@ def api_classroom_slots(name):
         "free_periods": free_periods,
         "busy_periods": busy_periods,
         "free_count": len(free_periods),
-        "total_periods": len(config.PERIODS),
+        "total_periods": len(PERIODS),
     })
 
 
@@ -305,7 +326,7 @@ def api_free_classrooms_in_range():
         end = int(request.args.get("end_period", 13))
     except (ValueError, TypeError):
         return jsonify({"error": "start_period 和 end_period 必须是整数"}), 400
-    campus = request.args.get("campus", config.CAMPUS_NAME)
+    campus = request.args.get("campus", DEFAULT_CAMPUS)
     building = request.args.get("building", "")
 
     if not date:
@@ -353,5 +374,6 @@ def index():
 # ── 启动 ──
 
 if __name__ == "__main__":
-    print("TUST 空闲教室 API 启动 → http://localhost:5000")
+    print(f"{_ADAPTER.profile.school_name} 空闲教室 API 启动 → http://127.0.0.1:5000")
+    print(f"数据库：{DB_PATH}")
     app.run(host="127.0.0.1", port=5000, debug=False)

@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 from playwright.sync_api import sync_playwright
 
 import config
-from edge_cdp import CDP_ENDPOINT, ensure_edge_debug
 from crawler_playwright import TUSTCrawlerPW
+from edge_cdp import CDP_ENDPOINT, ensure_edge_debug
 
 PROBES = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
 

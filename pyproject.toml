@@ -1,0 +1,30 @@
+# 项目工具配置（ruff / pytest 等）
+# 说明：本项目既有新写的框架代码，也有历史遗留的一次性脚本，
+# 因此 ruff 刻意只开启「能抓真 bug」的规则集（语法错误、未定义名、
+# 未使用导入、明显笔误），不做风格强制 —— 保证 CI 稳定且不制造噪音。
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+exclude = [
+    "static",
+    "data",
+    "wechat-mini",
+    "sponsor",
+    ".git",
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "W", "I"]
+ignore = [
+    "E501",   # 行宽不做强制（中文注释与长 SQL 串容易超）
+    "E741",   # 允许 l 之类的短变量名
+]
+
+[tool.ruff.lint.per-file-ignores]
+# 测试里为了构造各种异常输入，允许 import 未被直接使用 / 宽泛 except
+"tests/*" = ["F401"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

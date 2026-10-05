@@ -1,0 +1,50 @@
+{
+  "lastOptimized": "2026-10-05",
+  "round": 1,
+  "status": "optimized",
+  "direction": "整体转向新方向",
+  "repo": "huanweide/tust-classroom",
+  "survivalVerdict": "retain",
+  "improvements": [
+    "架构重构：抽出 campusfree/ 通用框架（模型/适配器协议/CDP/调度/存储/导出/脚手架/注册表/CLI）",
+    "新增 adapters/tust.py，TUST 降级为首个官方适配器，换学校只需加一个文件",
+    "修复 requirements.txt 漏写 playwright（P0：装完依赖直接 ImportError）",
+    "修复 e2e_test.cjs 写死作者本机路径，改为自动探测+内置静态服务，npm run e2e 可跑",
+    "补 102 项单元测试（原项目零测试），覆盖模型/契约/存储/导出/调度/适配器/API/脚手架/CLI",
+    "CI 升级：3.11+3.12 矩阵 + ruff 强制 + pytest + CLI 冒烟 + 前端资源校验",
+    "修复 /api/periods 与 /api/free-rooms 字段名不一致（time vs time_range）",
+    "修复 export_static.py 硬编码泰达排序、前端硬编码默认校区，改为数据驱动",
+    "README 完全重写（新定位+对比表+两条快速开始路线），删除复制来的无关段落",
+    "新增 docs/ADAPTER_GUIDE.md、docs/ARCHITECTURE.md、CHANGELOG.md",
+    "新增 pyproject.toml/pytest.ini/requirements-dev.txt/package.json，.gitignore 补全凭据防护",
+    "保留全部老入口与表结构，作者本机定时任务与本地数据库零影响"
+  ],
+  "decisionLog": [
+    "存活评估：检索中英文同类（曲阜师大/华科/北邮/UNC/博洛尼亚等）全为单校单实现小项目，无碾压级替代；本校数据本身即壁垒 → 保留",
+    "方向：整体转向新方向（单校工具 star 天花板过低，同类遍地但『接入框架』是空白赛道）",
+    "第一性原理：真正资产是『教务数据 → 离线 PWA』流水线，对全国 3000 所高校都成立",
+    "马斯克质疑：只服务一所学校天花板 <100 star；做成框架可服务任意学校并承接校外 PR",
+    "费曼简化：一所学校 = 一个适配器（4 个方法 + 节次表），接缝真实存在，非过度抽象",
+    "兼容性压倒一切：config.py/crawler_playwright.py/export_static.py 保留，参数语义不变，表结构不变，profile 目录不变"
+  ],
+  "selfReview": [
+    "选池脚本用 -q .name 判空导致 404 误判，浪费一轮排查",
+    "SSH clone / git fetch 卡死约 10 分钟，应优先用 gh api tarball + 本地 git init",
+    "同文件并行 Edit 触发 EBUSY，应一次一个",
+    "ruff 未配置直接跑出 172 条风格噪音，应先写 pyproject.toml 收敛",
+    "脚手架模板用 str.format 与 JS 花括号冲突，改用 __占位符__ + replace"
+  ],
+  "selfCheck": {
+    "ruff": "All checks passed!",
+    "pytest": "102 passed",
+    "compileall": "OK",
+    "cli": "schools/check 均正常"
+  },
+  "nextCandidates": [
+    "招 3 个校外适配器 PR",
+    "前端支持多学校切换",
+    "static/ 模板化，新学校导出即得自己的页面",
+    "数据新鲜度告警（generated_at 过期自动开 Issue）"
+  ],
+  "pr": "https://github.com/huanweide/tust-classroom/pull/6"
+}
