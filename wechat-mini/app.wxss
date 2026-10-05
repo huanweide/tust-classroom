@@ -1,0 +1,20 @@
+page {
+  --primary: #0891B2;
+  --primary-light: #ECFEFF;
+  --green: #22C55E;
+  --green-bg: #F0FDF4;
+  --red: #EF4444;
+  --red-bg: #FEF2F2;
+  --bg: #F8FAFC;
+  --card: #FFFFFF;
+  --text: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+  --radius: 16rpx;
+  --radius-sm: 10rpx;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 28rpx;
+  color: #0F172A;
+  background: #F8FAFC;
+}
