@@ -11,12 +11,11 @@
 import argparse
 import os
 import signal
-import sys
 import threading
-import time
 from datetime import datetime
 
 from playwright.sync_api import sync_playwright
+
 from edge_cdp import CDP_ENDPOINT, cdp_available  # IMP-056：统一 CDP 常量与探测逻辑
 
 # 优雅退出标志：收到 SIGINT/SIGTERM 后置位，run_loop 在下个检查点退出

@@ -309,7 +309,7 @@ input[type="text"]:focus, select:focus { outline: none; border-color: var(--prim
   <div class="footer">
     <div class="badges">
       <span class="badge">URP 教务系统</span>
-      <span class="badge">泰达 + 河西</span>
+      <span class="badge" id="badge-campus">泰达 + 河西</span>
       <span class="badge">PWA 可安装</span>
       <span class="badge" id="badge-update" style="display:none;background:#FEF3C7;border-color:#FCD34D;color:#B45309;cursor:pointer;" onclick="location.reload()">有新数据 · 点击刷新</span>
     </div>
@@ -478,10 +478,30 @@ async function init() {
   document.getElementById('sel-campus').innerHTML =
     index.campuses.map(c => `<option>${c}</option>`).join('');
   document.getElementById('sel-campus').onchange = onCampusChange;
-  // 默认校区：泰达（用户要求）
-  if (index.campuses.includes('泰达')) {
-    document.getElementById('sel-campus').value = '泰达';
+  // 默认校区：优先用后端导出的 default_campus（换学校也不用改前端）
+  // 兼容老数据：老 index.json 没有该字段时，退回「含泰达选泰达」的老行为
+  const defaultCampus =
+    index.default_campus ||
+    (index.campuses.includes('泰达') ? '泰达' : index.campuses[0]);
+  if (defaultCampus) {
+    document.getElementById('sel-campus').value = defaultCampus;
   }
+
+  // 站点文案跟随数据：学校名 / 校区列表（换学校不用改前端）
+  const schoolName = index.school || '';
+  if (schoolName) {
+    document.title = `${schoolName} 空闲教室查询`;
+    const h1 = document.querySelector('.header h1');
+    if (h1) h1.textContent = `${schoolName} 空闲教室`;
+  }
+  const campusText = (index.campuses || []).join(' + ');
+  const subEl = document.querySelector('.header .subtitle');
+  if (subEl && schoolName) {
+    subEl.innerHTML = `${schoolName}${campusText ? ' · ' + campusText : ''} · ` +
+      `<span id="update-time">加载中...</span>`;
+  }
+  const campusBadge = document.getElementById('badge-campus');
+  if (campusBadge && campusText) campusBadge.textContent = campusText;
 
   // Period selectors
   const periodOpts = Object.entries(index.periods).map(([p, t]) =>

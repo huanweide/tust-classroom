@@ -1,17 +1,71 @@
+# ===== 凭据类：永久禁止入 Git（最高优先级）=====
+# 环境变量（真实密钥只准放环境变量 / GitHub Secrets）
+.env
+.env.*
+!.env.example
+!.env.template
+
+# 密钥 / 证书 / 私钥
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.priv
+id_rsa
+id_ecdsa
+id_ed25519
+.ssh/
+
+# 云平台凭据目录
+.aws/
+.azure/
+.gcp/
+.kube/
+
+# 通用凭据文件
+credentials.json
+service-account*.json
+auth.json
+tokens.json
+token.json
+secrets.json
+*.secret
+*.token
+cookies.json
+
+# 包管理器 / 认证凭据
+.npmrc
+.pypirc
+.netrc
+.git-credentials
+
+# 教务系统会话（URP CAS 令牌，明文泄露等同账号失窃）
+data/cookies.txt
+data/*cookies*
+
+# ===== 本项目特有 =====
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+venv/
+.venv/
+
+# 本地数据库与浏览器 profile（含登录态，绝不能提交）
 data/classrooms.db
+data/*.db
 data/browser_profile/
-.env
 *.log
-data/cookies.txt
+
+# 体积大的二进制依赖，不入库
 cloudflared.exe
 
-# 微信开发者工具：本地私有配置与调试产物（不应入库）
+# 微信开发者工具：本地私有配置与调试产物
 wechat-mini/project.private.config.json
 wechat-mini/sourcemap.zip
-
-# 微信小程序云函数依赖
 wechat-mini/cloudfunctions/**/node_modules/
 
 # Node 依赖（E2E 测试用）

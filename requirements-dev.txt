@@ -1,0 +1,6 @@
+# 开发 / 测试依赖（普通用户不需要装）
+# 用法：pip install -r requirements-dev.txt
+-r requirements.txt
+
+pytest>=8.0.0
+ruff>=0.6.0

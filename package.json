@@ -1,0 +1,15 @@
+{
+  "name": "campusfree-frontend",
+  "version": "2.0.0",
+  "private": true,
+  "description": "CampusFreeRoom 前端端到端测试（真实浏览器点击前端页面）",
+  "scripts": {
+    "e2e": "node e2e_test.cjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": ">=22.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

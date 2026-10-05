@@ -1,9 +1,106 @@
+/**
+ * 前端端到端测试（真实浏览器点击，不是模拟 DOM）
+ *
+ * 以前这个脚本把 Chrome 路径、截图目录全写死在作者本机，别人 clone 下来
+ * 根本跑不了。现在改成：浏览器路径自动探测 / 可用环境变量覆盖，
+ * 静态站点由本脚本自己起，跑完自动关。
+ *
+ * 用法：
+ *   npm install && npm run e2e
+ *   或：node e2e_test.cjs
+ *
+ * 可用环境变量：
+ *   CHROME_PATH  本机 Chrome/Edge 可执行文件（不填则自动探测）
+ *   E2E_PORT     静态服务端口（默认 8123）
+ *   E2E_SHOTS    截图输出目录（默认 ./e2e_shots）
+ */
 const puppeteer = require('puppeteer-core');
 const fs = require('fs');
+const http = require('http');
+const path = require('path');
 
-const CHROME = 'C:/Users/Administrator/.cache/puppeteer/chrome/win64-148.0.7778.167/chrome-win64/chrome.exe';
-const URL = 'http://127.0.0.1:8123/index.html';
-const SHOTS = 'C:/Users/Administrator/Documents/tust-classroom/e2e_shots';
+const ROOT = __dirname;
+const STATIC_DIR = path.join(ROOT, 'static');
+const PORT = Number(process.env.E2E_PORT || 8123);
+const URL = process.env.E2E_URL || `http://127.0.0.1:${PORT}/index.html`;
+const SHOTS = process.env.E2E_SHOTS || path.join(ROOT, 'e2e_shots');
+const RESULT_FILE = process.env.E2E_RESULT || path.join(ROOT, 'e2e_result.json');
+
+// 浏览器路径自动探测：先认环境变量，再按系统常见位置找一遍
+const CANDIDATES = [
+  process.env.CHROME_PATH,
+  path.join(ROOT, '..', '.cache', 'puppeteer'),
+  'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+  'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  '/usr/bin/google-chrome',
+  '/usr/bin/chromium',
+].filter(Boolean);
+
+function findChrome() {
+  for (const c of CANDIDATES) {
+    if (c.includes('*')) continue;
+    if (fs.existsSync(c) && fs.statSync(c).isFile()) return c;
+    // 支持给一个 puppeteer 缓存目录，递归找 chrome.exe
+    if (fs.existsSync(c) && fs.statSync(c).isDirectory()) {
+      const found = walkFind(c, /^(chrome|headless_shell)(\.exe)?$/i, 4);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function walkFind(dir, re, maxDepth) {
+  if (maxDepth < 0) return null;
+  let entries = [];
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return null; }
+  for (const e of entries) {
+    const p = path.join(dir, e.name);
+    if (e.isFile() && re.test(e.name)) return p;
+    if (e.isDirectory()) {
+      const hit = walkFind(p, re, maxDepth - 1);
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
+
+const CHROME = findChrome();
+if (!CHROME) {
+  console.error(
+    '[FATAL] 没找到 Chrome/Edge。请设置环境变量 CHROME_PATH 指向浏览器可执行文件。\n' +
+    '        例：CHROME_PATH="C:/Program Files/Google/Chrome/Application/chrome.exe" npm run e2e'
+  );
+  process.exit(2);
+}
+
+const MIME = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+  '.webmanifest': 'application/manifest+json',
+};
+
+function startStaticServer() {
+  const server = http.createServer((req, res) => {
+    const rel = decodeURIComponent(req.url.split('?')[0]).replace(/^\/+/, '');
+    const file = path.join(STATIC_DIR, rel || 'index.html');
+    // 防目录穿越
+    if (!file.startsWith(STATIC_DIR)) { res.writeHead(403).end(); return; }
+    fs.readFile(file, (err, data) => {
+      if (err) { res.writeHead(404).end('not found'); return; }
+      res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
+      res.end(data);
+    });
+  });
+  return new Promise(resolve => server.listen(PORT, '127.0.0.1', () => resolve(server)));
+}
+
 fs.mkdirSync(SHOTS, { recursive: true });
 
 const results = [];
@@ -14,6 +111,9 @@ const rec = (name, pass, detail) => {
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 (async () => {
+  const server = await startStaticServer();
+  console.log(`[e2e] 静态服务：${URL}`);
+  console.log(`[e2e] 浏览器：${CHROME}`);
   const browser = await puppeteer.launch({
     executablePath: CHROME,
     headless: true,
@@ -120,8 +220,10 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   rec('T10 页面无JS错误(忽略本地sw MIME)', realErrs.length === 0, realErrs.slice(0, 2).join(' | '));
 
   await browser.close();
+  server.close();
   const pass = results.filter(r => r.pass).length;
   console.log(`\n=== 端到端结果: ${pass}/${results.length} 通过 ===`);
-  fs.writeFileSync('C:/Users/Administrator/Documents/tust-classroom/e2e_result.json', JSON.stringify(results, null, 2));
+  console.log(`[e2e] 截图目录：${SHOTS}`);
+  fs.writeFileSync(RESULT_FILE, JSON.stringify(results, null, 2));
   process.exit(pass === results.length ? 0 : 1);
 })().catch(e => { console.error('FATAL', e); process.exit(2); });
