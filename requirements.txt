@@ -1,7 +1,7 @@
 # ── 运行核心依赖 ──
 # 浏览器自动化：通过 CDP 复用已登录的浏览器会话，爬取空闲教室
 # （旧版本漏写了 playwright，导致按 README 装完依赖后一运行就 ImportError）
-playwright>=1.44.0
+playwright>=1.63.0
 # 本地查询 API（app.py）
 flask>=3.1.3
 
