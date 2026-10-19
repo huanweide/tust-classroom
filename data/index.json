@@ -206,5 +206,464 @@
     "12": "20:25-21:10",
     "13": "21:20-22:05"
   },
-  "updated": "2027-01-20"
+  "updated": "2027-01-20",
+  "school": "天津科技大学",
+  "default_campus": "泰达",
+  "source": "数据来源：天津科技大学 URP 教务系统（非官方工具）",
+  "buildingMeta": {
+    "泰达": [
+      {
+        "key": "9-",
+        "display": "9号楼",
+        "tier": "step",
+        "sort": 0,
+        "roomCount": 43,
+        "skipList": false,
+        "isStepBld": true
+      },
+      {
+        "key": "3-",
+        "display": "3号楼",
+        "tier": "main",
+        "sort": 930,
+        "roomCount": 70,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "7-",
+        "display": "7号楼",
+        "tier": "main",
+        "sort": 954,
+        "roomCount": 46,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "5-",
+        "display": "5号楼",
+        "tier": "main",
+        "sort": 955,
+        "roomCount": 45,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "4-",
+        "display": "4号楼",
+        "tier": "main",
+        "sort": 977,
+        "roomCount": 23,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "泰达实训-",
+        "display": "泰达实训-",
+        "tier": "main",
+        "sort": 993,
+        "roomCount": 7,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "逸夫楼",
+        "display": "逸夫楼",
+        "tier": "main",
+        "sort": 994,
+        "roomCount": 6,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "2-",
+        "display": "2号楼",
+        "tier": "main",
+        "sort": 996,
+        "roomCount": 4,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "生物化学实验室",
+        "display": "生物化学实验室",
+        "tier": "main",
+        "sort": 996,
+        "roomCount": 4,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "工程中心综合实验室",
+        "display": "工程中心综合实验室",
+        "tier": "main",
+        "sort": 998,
+        "roomCount": 2,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "微生物学实验室",
+        "display": "微生物学实验室",
+        "tier": "main",
+        "sort": 998,
+        "roomCount": 2,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "有机化学实验室",
+        "display": "有机化学实验室",
+        "tier": "main",
+        "sort": 998,
+        "roomCount": 2,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "13号楼",
+        "display": "13号楼",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "8-",
+        "display": "8号楼",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "仪器分析实验室",
+        "display": "仪器分析实验室",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "分析化学实验室",
+        "display": "分析化学实验室",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "化工原理实验室",
+        "display": "化工原理实验室",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "无机化学实验室",
+        "display": "无机化学实验室",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "物理一实验室",
+        "display": "物理一实验室",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "物理二实验室",
+        "display": "物理二实验室",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "物理化学实验室",
+        "display": "物理化学实验室",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "综合化学实验室",
+        "display": "综合化学实验室",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "运动场",
+        "display": "运动场",
+        "tier": "venue",
+        "sort": 99998,
+        "roomCount": 2,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "体育馆",
+        "display": "体育馆",
+        "tier": "venue",
+        "sort": 99999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "网络",
+        "display": "网络",
+        "tier": "venue",
+        "sort": 99999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "7号楼虚拟",
+        "display": "7号楼虚拟",
+        "tier": "virtual",
+        "sort": 199995,
+        "roomCount": 5,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "学院教室（虚拟）",
+        "display": "学院教室（虚拟）",
+        "tier": "virtual",
+        "sort": 199996,
+        "roomCount": 4,
+        "skipList": false,
+        "isStepBld": false
+      }
+    ],
+    "河西": [
+      {
+        "key": "阶梯",
+        "display": "阶梯",
+        "tier": "step",
+        "sort": 0,
+        "roomCount": 3,
+        "skipList": false,
+        "isStepBld": true
+      },
+      {
+        "key": "1号楼",
+        "display": "1号楼",
+        "tier": "main",
+        "sort": 950,
+        "roomCount": 50,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "E",
+        "display": "E",
+        "tier": "main",
+        "sort": 970,
+        "roomCount": 30,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "A",
+        "display": "A",
+        "tier": "main",
+        "sort": 976,
+        "roomCount": 24,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "18-",
+        "display": "18号楼",
+        "tier": "main",
+        "sort": 984,
+        "roomCount": 16,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "12-",
+        "display": "12号楼",
+        "tier": "main",
+        "sort": 985,
+        "roomCount": 15,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "17-",
+        "display": "17号楼",
+        "tier": "main",
+        "sort": 988,
+        "roomCount": 12,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "主楼D区",
+        "display": "主楼D区",
+        "tier": "main",
+        "sort": 989,
+        "roomCount": 11,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "B",
+        "display": "B",
+        "tier": "main",
+        "sort": 990,
+        "roomCount": 10,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "F",
+        "display": "F",
+        "tier": "main",
+        "sort": 997,
+        "roomCount": 3,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "16-",
+        "display": "16号楼",
+        "tier": "main",
+        "sort": 998,
+        "roomCount": 2,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "C",
+        "display": "C",
+        "tier": "main",
+        "sort": 998,
+        "roomCount": 2,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "物理实验室",
+        "display": "物理实验室",
+        "tier": "main",
+        "sort": 998,
+        "roomCount": 2,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "21-",
+        "display": "21号楼",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "2-",
+        "display": "2号楼",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "有机化学实验室",
+        "display": "有机化学实验室",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "河西实训-",
+        "display": "河西实训-",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "金工实训-",
+        "display": "金工实训-",
+        "tier": "main",
+        "sort": 999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "网络",
+        "display": "网络",
+        "tier": "venue",
+        "sort": 99998,
+        "roomCount": 2,
+        "skipList": false,
+        "isStepBld": false
+      },
+      {
+        "key": "大活",
+        "display": "大活",
+        "tier": "venue",
+        "sort": 99999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "田径场",
+        "display": "田径场",
+        "tier": "venue",
+        "sort": 99999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "表演厅",
+        "display": "表演厅",
+        "tier": "venue",
+        "sort": 99999,
+        "roomCount": 1,
+        "skipList": true,
+        "isStepBld": false
+      },
+      {
+        "key": "学院教室（虚拟）",
+        "display": "学院教室（虚拟）",
+        "tier": "virtual",
+        "sort": 199997,
+        "roomCount": 3,
+        "skipList": false,
+        "isStepBld": false
+      }
+    ]
+  }
 }
