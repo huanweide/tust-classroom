@@ -235,3 +235,11 @@ python keepalive.py --once                 # 照常可用
 ## 许可证
 
 [MIT](LICENSE) · 作者 [ReTri · 樊斯瑞](https://github.com/huanweide)
+---
+
+## 便携性 · 离线 PWA
+
+- 纯静态站点，可安装到手机 / 桌面，离线可用，无需后端服务器。
+- 接一所新学校只需写一个适配器（约 30 分钟），框架已就位。
+
+← [更多开源工具 · huanweide](https://github.com/huanweide)
