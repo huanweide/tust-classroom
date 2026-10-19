@@ -2,5 +2,5 @@
 # 用法：pip install -r requirements-dev.txt
 -r requirements.txt
 
-pytest>=8.0.0
+pytest>=9.1.1
 ruff>=0.17.0
