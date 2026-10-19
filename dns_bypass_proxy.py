@@ -43,15 +43,17 @@ def pipe(src, dst):
         except OSError: pass
 
 
-def handle(client, upstream_ip):
+def handle(client, upstream_ips):
     """处理一个客户端连接。
 
-    关键：curl 的 `-x` / git 的 http.proxy 会先发 HTTP CONNECT 隧道请求，
-    必须先回 `200 Connection Established` 再开始裸 TCP 管道，
-    否则客户端一直等响应直到超时（表现为 HTTP 000）。
+    关键点：
+    1. curl/git 的 http.proxy 会先发 HTTP CONNECT，必须先回
+       `200 Connection Established` 再开始裸 TCP 管道，
+       否则客户端一直等响应直到超时（表现为 HTTP 000）。
+    2. 上游 IP 会自动故障转移：GitHub 的 IP 会漂移，
+       某个 IP 超时后换下一个，避免整条链路时通时断。
     """
     try:
-        # 读第一个请求，判断是否 CONNECT
         client.settimeout(15)
         first = b""
         while b"\r\n\r\n" not in first:
@@ -65,17 +67,26 @@ def handle(client, upstream_ip):
         client.settimeout(None)
 
         head = first.split(b"\r\n", 1)[0].decode("latin-1", "ignore")
-        if head.upper().startswith("CONNECT"):
-            # CONNECT host:port HTTP/1.1 → 回确认，然后透传
-            upstream = socket.create_connection((upstream_ip, 443), timeout=20)
+        is_connect = head.upper().startswith("CONNECT")
+        port = 443 if is_connect else 80
+
+        upstream = None
+        for ip in upstream_ips:
+            try:
+                upstream = socket.create_connection((ip, port), timeout=10)
+                break
+            except OSError:
+                continue
+        if upstream is None:
+            client.close()
+            return
+
+        if is_connect:
             client.sendall(b"HTTP/1.1 200 Connection Established\r\n\r\n")
-            # 去掉已读的 CONNECT 头，剩余字节（通常没有）透传
             rest = first.split(b"\r\n\r\n", 1)[1] if b"\r\n\r\n" in first else b""
             if rest:
                 upstream.sendall(rest)
         else:
-            # 非 CONNECT（极少见，如 git 的 http.proxy 直连）→ 直接透传首个请求
-            upstream = socket.create_connection((upstream_ip, 80), timeout=20)
             upstream.sendall(first)
     except OSError:
         try: client.close()
@@ -87,15 +98,37 @@ def handle(client, upstream_ip):
 
 
 def pick_ip():
-    """挑一个当前能连通的 GitHub IP。"""
-    for ip in GITHUB_IPS:
+    """并行探测全部 IP，按「先连通的排前面」返回有序列表。
+
+    返回 list（可能为空）。这样 handle() 里直接按顺序取第一个，
+    不用在建连接时等超时 —— 实测踩坑：把探测放进 handle()
+    会让 CONNECT 握手等 10-30 秒，客户端（curl/git）早就超时了（HTTP 000）。
+    """
+    import queue
+    import concurrent.futures
+
+    ok_ips, q = [], queue.Queue()
+
+    def probe(ip):
         try:
             s = socket.create_connection((ip, 443), timeout=6)
             s.close()
-            return ip
+            q.put(ip)
         except OSError:
-            continue
-    return None
+            pass
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
+        for ip in GITHUB_IPS:
+            ex.submit(probe, ip)
+        # 最多等 12 秒，先到先得
+        deadline_rounds = 0
+        while deadline_rounds < 12:
+            try:
+                ok_ips.append(q.get(timeout=1))
+            except queue.Empty:
+                deadline_rounds += 1
+    # 探测通的排前面，没探测到的垫后（万一网络恢复还能用）
+    return ok_ips + [ip for ip in GITHUB_IPS if ip not in ok_ips]
 
 
 def main():
@@ -115,11 +148,11 @@ def main():
             print("没有在运行的转发进程")
         return 0
 
-    ip = pick_ip()
-    if not ip:
+    ips = pick_ip()
+    if not ips:
         print("[错误] 所有 GitHub IP 均不可达")
         return 1
-    print(f"选用 GitHub IP：{ip}")
+    print(f"可用 GitHub IP（按可达性排序）：{ips}")
 
     if args.bg:
         # 用 subprocess 起 detached 子进程（Windows 无 fork）
@@ -131,7 +164,7 @@ def main():
                                                        ".dns_bypass.log"), "w"),
                              stderr=subprocess.STDOUT)
         open(PID_FILE, "w").write(str(p.pid))
-        print(f"转发已在后台运行：127.0.0.1:{args.port} → {ip}:443（PID {p.pid}）")
+        print(f"转发已在后台运行：127.0.0.1:{args.port} → GitHub IP 池（PID {p.pid}）")
         print(f"\n推送命令：")
         print(f"  git -c http.proxy=http://127.0.0.1:{args.port} "
               f"-c https.proxy=http://127.0.0.1:{args.port} push origin main")
@@ -142,11 +175,13 @@ def main():
     srv.bind(("127.0.0.1", args.port))
     srv.listen(128)
     open(PID_FILE, "w").write(str(os.getpid()))
-    print(f"转发中：127.0.0.1:{args.port} → {ip}:443（Ctrl+C 停止）")
+    print(f"转发中：127.0.0.1:{args.port} → GitHub IP 池 {GITHUB_IPS}（Ctrl+C 停止）")
     try:
         while True:
             c, _ = srv.accept()
-            threading.Thread(target=handle, args=(c, ip), daemon=True).start()
+            # 传整个 IP 池，按连接故障转移
+            threading.Thread(target=handle, args=(c, GITHUB_IPS),
+                             daemon=True).start()
     except KeyboardInterrupt:
         print("\n已停止")
     finally:
