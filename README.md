@@ -106,6 +106,33 @@ python -m campusfree export --school nku
 
 单个学校爬一天：`run --school tust --dayoffset 1`（1 = 明天）
 
+### 固定刷新爬取（覆盖旧数据）
+
+`INSERT OR IGNORE` 有个隐患：命中 UNIQUE 约束就跳过，**重复爬同一天不会更新数据**，
+教务改过课表你也看不出来。用 `refresh_crawl.py` 做定期刷新，它先 DELETE 再重插：
+
+```bash
+python refresh_crawl.py --dry-run    # 只读体检：不写库、不请求教务系统
+python refresh_crawl.py              # 刷新今天起 7 天，覆盖旧值
+python refresh_crawl.py --repast 7   # 顺带重爬过去 7 天（修正历史数据）
+```
+
+三条保护：① `--dry-run` 用 `mode=ro` 打开数据库，物理上写不进去
+② 默认不清理历史数据（`--prune-days N` 才清理）——线上 130 天是资产
+③ 爬完自校验，某天行数低于阈值立即报警。登录态失效时教务接口会返回空列表，
+**爬虫不报错但 DB 被清空却插不进新值**，这是最危险的静默数据丢失。
+
+### 只重建元数据（本地数据不全时）
+
+本地 DB 天数少于线上时，`export` 会被安全闸门拦下（这是对的）。
+但改了归一化逻辑时，只想更新 `index.json` 的 `buildingMeta` 和 `search.json` 的
+归一化字段，不想动 130 个每日文件：
+
+```bash
+python meta_only.py --dry-run   # 预览
+python meta_only.py             # 写盘（每日 JSON 一概不碰）
+```
+
 ---
 
 ## 它是怎么工作的
@@ -176,6 +203,14 @@ python -m campusfree export --school nku
 | 静态检查 | ruff 全绿 | `ruff check .` |
 | 适配器契约 | 每条命令可自检 | `python -m campusfree check --school tust` |
 | 前端端到端 | 11 项真实浏览器点击 | `npm install && npm run e2e` |
+| **归一化回归** | 35 项 | `python test_normalize.py` |
+| **爬取运维** | 10 项 | `python test_refresh_crawl.py` |
+| **选教室 E2E** | 65 项真浏览器 | `node test_e2e_browse.mjs` |
+| **整体全链路** | 47 项 | `python verify_all.py` |
+
+`verify_all.py` 一条命令跑完九层校验：数据层回归 → 导出契约 → 每日数据一致性 →
+前后端字段对齐 → 真浏览器 E2E → 导出安全闸门 → 爬取运维 → 凭据扫描。
+**铁律：任何一项 FAIL 都不算交付完成。**
 
 测试用一个「假教务页面」对象（`tests/conftest.py`）驱动整条流水线，
 所以**不需要浏览器、不需要校园网、不需要登录态**，CI 里就能全跑。

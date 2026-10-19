@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="description" content="天津科技大学（TUST）空闲教室实时查询系统，支持泰达与河西双校区。按节次、时间范围、教室名三种方式快速找到空教室。数据每日自动更新。">
 <meta name="keywords" content="天津科技大学,空闲教室,TUST,泰达校区,河西校区,教室查询,课表,自习">
-<meta name="author" content="huanweide">
+<meta name="author" content="ReTri">
 <meta property="og:title" content="TUST 空闲教室 — 天津科技大学教室查询">
 <meta property="og:description" content="泰达+河西双校区空闲教室实时查询，三种查询模式，覆盖整个学期约130天数据。">
 <meta property="og:type" content="website">
@@ -155,6 +155,176 @@ input[type="text"]:focus, select:focus { outline: none; border-color: var(--prim
 .suggest-chip:hover { background: #CFFAFE; transform: translateY(-1px); }
 .suggest-chip small { color: var(--text-muted); font-weight: 400; margin-left: 2px; }
 
+/* Breadcrumb · M2 三层导航 */
+.crumbs { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; font-size: 12.5px; }
+.crumbs a { color: var(--primary); cursor: pointer; text-decoration: none; font-weight: 500; }
+.crumbs a:hover { text-decoration: underline; }
+.crumbs .sep { color: var(--text-muted); }
+.crumbs .cur { color: var(--text-secondary); font-weight: 600; }
+
+/* 校区/层级切换的淡入过渡 —— 避免内容生硬跳变（违和感来源） */
+#browse-level > * { animation: fadeUp 0.22s ease-out both; }
+#browse-level > *:nth-child(2) { animation-delay: 0.03s; }
+#browse-level > *:nth-child(3) { animation-delay: 0.06s; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #browse-level > * { animation: none; }
+}
+
+/* 楼栋分组标题（只做视觉分区，不折叠 —— 什么楼都可选） */
+.campus-hint {
+  font-size: 12px; color: var(--text-muted); margin: -2px 0 12px; line-height: 1.6;
+}
+.grp-label {
+  font-size: 12px; font-weight: 600; color: var(--text-secondary);
+  margin: 16px 0 8px; padding-left: 9px; border-left: 3px solid var(--border);
+}
+.grp-label.grp-step { border-left-color: var(--primary); color: var(--primary); }
+.grp-label.grp-venue { border-left-color: #FCD34D; }
+.grp-label.grp-virtual { border-left-color: var(--border); }
+
+/* Building tiles · 楼栋选择 */
+.bld-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.bld-tile {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 11px 12px; cursor: pointer; transition: all 0.15s; text-align: left;
+  font-family: inherit; display: flex; flex-direction: column; gap: 3px; min-height: 58px;
+}
+.bld-tile:hover { border-color: var(--primary-border); background: var(--primary-light); }
+.bld-tile:active { transform: scale(0.985); }
+.bld-tile .bn { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.bld-tile .bc { font-size: 11.5px; color: var(--text-muted); }
+.bld-tile.step { border-color: var(--primary-border); background: var(--primary-light); }
+.bld-tile.step .bn { color: var(--primary); }
+.bld-badge {
+  display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px;
+  font-weight: 600; letter-spacing: 0.2px;
+}
+.bld-badge.step { background: var(--primary); color: #fff; }
+.bld-badge.low { background: var(--green-bg); color: #15803D; border: 1px solid var(--green-border); }
+.bld-badge.venue { background: #FEF3C7; color: #B45309; }
+.bld-badge.virtual { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+
+/* Room list · 教室列表 */
+.room-list-box { display: flex; flex-direction: column; gap: 8px; }
+.room-tile {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 11px 13px; cursor: pointer; transition: all 0.15s; text-align: left;
+  font-family: inherit; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.room-tile:hover { border-color: var(--primary-border); background: var(--primary-light); }
+.room-tile:active { transform: scale(0.99); }
+.room-tile .rn { font-size: 14.5px; font-weight: 600; color: var(--text); }
+.room-tile .rs { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+.room-tile.is-step { border-left: 3px solid var(--primary); }
+.room-free-n {
+  flex-shrink: 0; min-width: 52px; text-align: center; padding: 4px 8px;
+  border-radius: 20px; font-size: 11.5px; font-weight: 600;
+}
+.room-free-n.high { background: var(--green-bg); color: #15803D; border: 1px solid var(--green-border); }
+.room-free-n.mid { background: #FEF3C7; color: #B45309; border: 1px solid #FCD34D; }
+.room-free-n.zero { background: var(--red-bg); color: #DC2626; border: 1px solid var(--red-border); }
+
+/* Global search · 全局搜索 */
+.search-box { position: relative; }
+.search-box input { padding-right: 66px; }
+.search-clear {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  border: none; background: var(--border); color: var(--text-muted);
+  border-radius: 50%; width: 22px; height: 22px; font-size: 13px; cursor: pointer;
+  display: none; align-items: center; justify-content: center; line-height: 1;
+}
+.search-clear.show { display: flex; }
+.search-res {
+  margin-top: 10px; max-height: 320px; overflow-y: auto;
+}
+.sr-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 12px; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); margin-bottom: 6px; cursor: pointer; transition: all 0.15s;
+}
+.sr-item:hover { border-color: var(--primary-border); background: var(--primary-light); }
+.sr-item .srn { font-size: 14px; font-weight: 600; color: var(--text); }
+.sr-item .srs { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+.sr-kind {
+  flex-shrink: 0; font-size: 10.5px; font-weight: 600; padding: 2px 7px;
+  border-radius: 4px; background: var(--bg); color: var(--text-muted); border: 1px solid var(--border);
+}
+.sr-kind.room { background: var(--primary-light); color: var(--primary); border-color: var(--primary-border); }
+
+/* ═══ M4 教室详情美化 ═══ */
+.room-hero { margin-bottom: 12px; }
+.room-hero .room-name { font-size: 21px; font-weight: 700; letter-spacing: -0.3px; }
+.room-actions { display: flex; gap: 8px; margin-top: 10px; }
+.mini-btn {
+  font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  padding: 7px 13px; border-radius: 6px; border: 1px solid var(--primary-border);
+  background: var(--primary-light); color: var(--primary); transition: all 0.15s;
+}
+.mini-btn:hover { background: #CFFAFE; }
+.mini-btn.ghost { background: var(--card); color: var(--text-secondary); border-color: var(--border); }
+.mini-btn.ghost:hover { background: var(--bg); color: var(--text); }
+
+/* 时间轴：13 节横排，一眼看出全天哪个时段能坐 */
+.timeline {
+  display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px;
+  margin: 12px 0 8px;
+}
+.tl-cell {
+  border-radius: 6px; padding: 7px 2px 6px; text-align: center;
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  border: 1px solid transparent; transition: transform 0.12s;
+}
+.tl-cell:active { transform: scale(0.94); }
+.tl-cell.free { background: var(--green-bg); border-color: var(--green-border); }
+.tl-cell.busy { background: #F8FAFC; border-color: var(--border); }
+.tl-cell.now { box-shadow: 0 0 0 2px var(--primary); }
+.tl-p { font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tl-t { font-size: 9.5px; opacity: 0.75; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; }
+.tl-cell.free .tl-p, .tl-cell.free .tl-t { color: #15803D; }
+.tl-cell.busy .tl-p, .tl-cell.busy .tl-t { color: #94A3B8; }
+
+.timeline-legend {
+  display: flex; gap: 14px; font-size: 11.5px; color: var(--text-muted);
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.timeline-legend .dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px;
+  vertical-align: 0;
+}
+.timeline-legend .dot.free { background: var(--green-border); }
+.timeline-legend .dot.busy { background: var(--border); }
+.timeline-legend .dot.now { background: var(--primary); }
+
+/* 结论卡：最长连续空闲段 */
+.summary-card {
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px;
+  border: 1px solid;
+}
+.summary-card.good { background: var(--green-bg); border-color: var(--green-border); }
+.summary-card.warn { background: #FEF3C7; border-color: #FCD34D; }
+.summary-card .sc-label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
+.summary-card .sc-value {
+  font-size: 19px; font-weight: 700; margin: 4px 0 3px;
+  font-variant-numeric: tabular-nums;
+}
+.summary-card.good .sc-value { color: #15803D; }
+.summary-card.warn .sc-value { color: #B45309; }
+.summary-card .sc-sub { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+
+/* Toast */
+.app-toast {
+  position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: #fff; font-size: 13px; font-weight: 500;
+  padding: 10px 18px; border-radius: 22px; opacity: 0; pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s; z-index: 99; max-width: 86vw;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+}
+.app-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 /* Row layout */
 .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -250,15 +420,31 @@ input[type="text"]:focus, select:focus { outline: none; border-color: var(--prim
     </div>
   </div>
 
+  <!-- Global Search · M2：搜索对所有模式生效（M3 联通） -->
+  <div class="card">
+    <label>找教室</label>
+    <div class="search-box">
+      <input type="text" id="inp-global" placeholder="输入楼号或教室号，如 9-16、9-、16阶梯" autocomplete="off">
+      <button class="search-clear" id="search-clear" onclick="clearGlobalSearch()">×</button>
+    </div>
+    <div id="search-results" class="search-res"></div>
+  </div>
+
   <!-- Mode Toggle -->
   <div class="toggle-row">
-    <button id="btn-room" class="active" onclick="switchMode('room')">按节次查空闲</button>
+    <button id="btn-browse" class="active" onclick="switchMode('browse')">选教室</button>
+    <button id="btn-room" onclick="switchMode('room')">按节次查空闲</button>
     <button id="btn-range" onclick="switchMode('range')">时间范围查空闲</button>
     <button id="btn-classroom" onclick="switchMode('classroom')">查教室空闲时段</button>
   </div>
 
+  <!-- Panel 0: Browse · M2 三层导航（默认模式） -->
+  <div id="panel-browse">
+    <div id="browse-level"></div>
+  </div>
+
   <!-- Panel 1: By Period -->
-  <div id="panel-room">
+  <div id="panel-room" style="display:none">
     <div class="card">
       <label>教学楼</label>
       <select id="sel-building-room"><option>全部</option></select>
@@ -309,7 +495,7 @@ input[type="text"]:focus, select:focus { outline: none; border-color: var(--prim
   <div class="footer">
     <div class="badges">
       <span class="badge">URP 教务系统</span>
-      <span class="badge" id="badge-campus">泰达 + 河西</span>
+      <span class="badge">泰达 + 河西</span>
       <span class="badge">PWA 可安装</span>
       <span class="badge" id="badge-update" style="display:none;background:#FEF3C7;border-color:#FCD34D;color:#B45309;cursor:pointer;" onclick="location.reload()">有新数据 · 点击刷新</span>
     </div>
@@ -321,19 +507,13 @@ input[type="text"]:focus, select:focus { outline: none; border-color: var(--prim
     </div>
 
     <div class="notes">
-      <div class="n"><b>1 · 作者</b>　<a href="https://github.com/huanweide" target="_blank" rel="noopener">ReTri · 樊斯瑞</a> · github.com/huanweide</div>
+      <div class="n"><b>1 · 作者</b>　<a href="https://github.com/huanweide" target="_blank" rel="noopener">ReTri</a></div>
       <div class="n"><b>2 · 开源</b>　<a href="https://github.com/huanweide/tust-classroom" target="_blank" rel="noopener">huanweide/tust-classroom</a> · <a href="https://github.com/huanweide/tust-classroom/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a> · 欢迎 Star / Fork</div>
       <div class="n"><b>3 · 数据</b>　数据来自天津科技大学 URP 教务系统，本工具<b>非官方</b>；课程与教室安排可能临时调整，请以教务处通知为准</div>
-      <div class="n"><b>4 · 赞助</b>　开源维护不易，欢迎 <a href="https://github.com/huanweide/tust-classroom" target="_blank" rel="noopener">GitHub Star / Sponsor</a> 支持；微信收款码见下方</div>
-    </div>
-
-    <div id="sponsor-box" style="margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <img src="sponsor/wechat-qr.png" alt="微信收款码 · 瑞宝宝" style="width:160px;height:160px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.12);background:#fff;" onerror="document.getElementById('sponsor-box').style.display='none';" />
-      <span style="font-size:12px;color:#94a3b8;">微信扫一扫 · 自愿赞助</span>
     </div>
 
     <div class="brand">
-      © 2026 ReTri · 樊斯瑞 · 天津科技大学空闲教室查询（泰达 &amp; 河西）
+      © 2026 ReTri · 天津科技大学空闲教室查询（泰达 &amp; 河西）
     </div>
   </div>
 
@@ -350,7 +530,7 @@ let dateCacheOrder = [];  // LRU order, oldest first
 const DATE_CACHE_MAX = 10;
 let searchIdx = null;     // search index
 let selDate = '';         // currently selected date YYYY-MM-DD
-let mode = 'room';
+let mode = 'browse';       // M2 默认进「选教室」
 let abortCtrl = null;     // for cancelling in-flight fetch
 
 // Chinese weekday labels
@@ -368,10 +548,565 @@ const ICONS = {
 };
 
 let _ready = false;
+let navStack = [];          // 导航栈：[{level, campus, building, room}]
+let NAV_FOLD = { roomsOpen: false };  // 教室列表超 15 间时折叠
 
 // ═══════════════════════════════════════
-// Data Freshness
+// M1 解析器（JS 镜像版）
+// ───────────────────────────────────────
+// 铁律：这里【只产生意图】，最终裁决靠 export_static 预计算的归一化字段
+// （search.json 的 d/sd/st/sn 与index.json 的 buildingMeta）。
+// 严禁在前端另写一套「楼名映射表」—— 那正是 M1 踩过的漂移坑。
+//
+// 与 normalize.py 的对应关系：解析意图一致，但真实存在性只能由索引判定。
+
+// 实测：库里真实存在的阶梯序号（1-8、10-17，没有 9）
+const STEP_NOS = new Set([1,2,3,4,5,6,7,8,10,11,12,13,14,15,16,17]);
+
+function parseQuery(q) {
+  q = (q || '').trim();
+  if (!q) return [];
+  const norm = q.replace(/[—－]/g, '-').replace(/\s+/g, '');
+  const cands = [];
+  const push = o => cands.push(o);
+
+  // F 精确名兜底（分数封顶）—— 316机房 这类真名靠它兜住
+  const probes = new Set([q, norm]);
+  probes.forEach(p => {
+    push({kind:'room_exact', score:999, room:p, display:p});
+    push({kind:'bld_exact', score:998, bldKey:p, display:p});
+  });
+
+  // E 显式阶梯名：16阶梯 / 16阶梯(d)
+  let m = norm.match(/^(\d{1,2})阶梯(\(.*\))?$/);
+  if (m) {
+    const no = parseInt(m[1], 10);
+    push({kind:'room', score:200-no, room:`${no}阶梯(d)`, stepNo:no,
+          display:`${no}阶梯`, hint:'阶梯教室'});
+  }
+
+  // B 楼栋前缀（必须带 - 或 号楼）：9-16 / 9号楼16
+  m = norm.match(/^(\d{1,2})(?:-|号楼)(\d{1,3})(阶梯.*)?$/);
+  if (m) {
+    const bld = parseInt(m[1],10), no = parseInt(m[2],10);
+    push({kind:'room', score:130-no, bldNum:bld, room:`${no}阶梯(d)`, stepNo:no,
+          display:`${bld}号楼 ${no}阶梯`, hint:'阶梯教室'});
+  }
+
+  // B2 连写：916阶梯 —— 必须穷举切法（正则贪婪只会给出一种且常是错的）
+  m = norm.match(/^(\d{2,4})阶梯$/);
+  if (m) {
+    const d = m[1];
+    for (let i = 1; i < d.length; i++) {
+      const bld = parseInt(d.slice(0,i),10), no = parseInt(d.slice(i),10);
+      if (bld >= 1 && bld <= 40 && STEP_NOS.has(no)) {
+        push({kind:'room', score:122-no, bldNum:bld, room:`${no}阶梯(d)`, stepNo:no,
+              display:`${bld}号楼 ${no}阶梯`, hint:'阶梯教室'});
+      }
+    }
+  }
+
+  // A 纯数字：先当阶梯号，再当楼号
+  if (/^\d{1,2}$/.test(norm)) {
+    const no = parseInt(norm,10);
+    if (STEP_NOS.has(no)) {
+      push({kind:'room', score:110-no, room:`${no}阶梯(d)`, stepNo:no,
+            display:`${no}阶梯`, hint:'阶梯教室'});
+    }
+    push({kind:'building', score:30, bldNum:no, display:`${no}号楼`, hint:'教学楼'});
+  }
+
+  // B2' 纯连写数字（101/610/908…）—— 全是真房号，只走精确匹配，绝不猜楼号
+  else if (/^\d{3,4}$/.test(norm)) {
+    push({kind:'room_exact', score:60, room:norm, display:norm, hint:'按房号精确匹配'});
+  }
+
+  // C 只给楼号：9号楼
+  m = norm.match(/^(\d{1,2})号楼$/);
+  if (m) {
+    push({kind:'building', score:80, bldNum:parseInt(m[1],10),
+          display:`${m[1]}号楼`, hint:'教学楼'});
+  }
+
+  // D 楼栋关键字
+  if (norm === '9-' || norm === '9号楼') {
+    push({kind:'building', score:95, bldKey:'9-', display:'9号楼', hint:'阶梯教室所在楼'});
+  } else if (/阶梯|阶/.test(norm)) {
+    // 「9阶梯」这类不存在的名字不要退化成楼栋
+    if (!/^\d{1,4}阶梯(\(.*\))?$/.test(norm)) {
+      push({kind:'building', score:70, bldKey:'阶梯', display:'阶梯教室楼', hint:'教学楼'});
+    }
+  } else if (!/^\d{1,2}$/.test(norm) && !/^\d{3,4}$/.test(norm)) {
+    push({kind:'building', score:40, bldKey:norm, display:norm, hint:'教学楼'});
+  }
+
+  // 去重：同目标留最高分
+  const best = new Map();
+  cands.forEach(c => {
+    const k = `${c.kind}|${c.bldKey||''}|${c.bldNum||''}|${c.room||''}`;
+    if (!best.has(k) || c.score > best.get(k).score) best.set(k, c);
+  });
+  return [...best.values()].sort((a,b) => b.score - a.score);
+}
+
 // ═══════════════════════════════════════
+// M1 裁决：结合真实索引，编造一律丢弃
+// ═══════════════════════════════════════
+function resolveQuery(q, campus) {
+  const cands = parseQuery(q);
+  if (!cands.length || !searchIdx) return [];
+  const out = [], seen = new Set();
+
+  const pushBld = (campus_, key, disp, score, hint) => {
+    const k = `b|${campus_}|${key}`;
+    if (seen.has(k)) return;
+    seen.add(k);
+    const meta = (index.buildingMeta?.[campus_] || []).find(m => m.key === key);
+    out.push({
+      type:'building', campus:campus_, building:key,
+      display: meta ? meta.display : disp,
+      sub: `${campus_}${hint ? ' · ' + hint : ''}`,
+      roomCount: meta ? meta.roomCount : 0,
+      tier: meta ? meta.tier : 'main',
+      isStepBld: meta ? meta.isStepBld : false,
+      score
+    });
+  };
+
+  const pushRoom = (rec, disp, score) => {
+    const k = `r|${rec.c}|${rec.b}|${rec.r}`;
+    if (seen.has(k)) return;
+    seen.add(k);
+    out.push({
+      type:'room', campus:rec.c, building:rec.b, room:rec.r,
+      display: disp || rec.d || rec.r,
+      sub: `${rec.sd || rec.b} · ${rec.c}`,
+      score
+    });
+  };
+
+  const sortByCampus = arr =>
+    campus ? [...arr.filter(x => x[0] === campus), ...arr.filter(x => x[0] !== campus)] : arr;
+
+  for (const c of cands) {
+    if (c.kind === 'room' || c.kind === 'room_exact') {
+      let hits = searchIdx.filter(r => r.r === c.room);
+      if (c.bldNum != null) {
+        // 带楼号的候选必须校验楼号真实存在（91阶梯 丢掉 91 楼，只留 9 楼）
+        const n = c.bldNum;
+        hits = hits.filter(r => buildingNum(r.sd || r.b) === n);
+      }
+      sortByCampus(hits.map(r => [r.c, r]))
+           .slice(0, c.kind === 'room' ? 3 : 6)
+           .forEach(([, r]) => pushRoom(r, c.display, c.score));
+    } else if (c.kind === 'building' || c.kind === 'bld_exact') {
+      let keys = c.bldKey != null ? [c.bldKey] : [];
+      if (!keys.length && c.bldNum != null) keys = null;   // 交给下面按楼号找
+      if (keys) {
+        keys.forEach(k => {
+          const cs = [...new Set(searchIdx.filter(r => r.b === k).map(r => r.c))];
+          sortByCampus(cs.map(x => [x, x])).forEach(([cc]) => pushBld(cc, k, c.display, c.score, c.hint));
+        });
+      }
+      if (c.bldNum != null) {
+        const n = c.bldNum;
+        const cs = [...new Set(searchIdx.filter(r => buildingNum(r.sd || r.b) === n).map(r => r.c))];
+        sortByCampus(cs.map(x => [x, x])).slice(0,4).forEach(([cc]) => {
+          const key = searchIdx.find(r => r.c === cc && buildingNum(r.sd || r.b) === n).b;
+          pushBld(cc, key, c.display, c.score, c.hint);
+        });
+      }
+    }
+  }
+  return out.slice(0, 8);
+}
+
+function buildingNum(display) {
+  const m = String(display).match(/^(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+// ═══════════════════════════════════════
+// M2 三层导航：楼栋 → 教室 → 时段
+// ═══════════════════════════════════════
+const TIER_LABEL = {
+  step: '阶梯教室楼', main: '教学楼',
+  low: '小型场所', venue: '场地', virtual: '虚拟教室',
+};
+
+function currentCampus() {
+  const el = document.getElementById('sel-campus');
+  return el ? el.value : '';
+}
+
+function renderBreadcrumb(items) {
+  const box = document.getElementById('browse-level');
+  if (!items || !items.length) return '';
+  let html = '<div class="crumbs">';
+  items.forEach((it, i) => {
+    if (i) html += '<span class="sep">›</span>';
+    const isCur = i === items.length - 1;
+    html += isCur
+      ? `<span class="cur">${esc(it.label)}</span>`
+      : `<a onclick="${it.act}">${esc(it.label)}</a>`;
+  });
+  return html + '</div>';
+}
+
+// ── 第一层：楼栋列表 ──
+async function navBuildings() {
+  // 注意：这里【不能】用 _ready 做前置判断 ——
+  // init() 会先调navBuildings() 再置 _ready=true，加了判断会直接 return 什么都不渲染。
+  if (!index) return;
+  navStack = [{level: 'buildings', campus: currentCampus()}];
+  if (mode !== 'browse') switchMode('browse');
+  await renderBuildings();
+}
+
+async function renderBuildings() {
+  const box = document.getElementById('browse-level');
+  const campus = currentCampus();
+  const meta = index.buildingMeta?.[campus] || [];
+  box.innerHTML = L();
+
+  // 无元数据兜底（老数据没 buildingMeta 时按原逻辑列出）
+  if (!meta.length) {
+    const blds = index.buildings[campus] || [];
+    let h = renderBreadcrumb([{label: `${campus}校区`, act: ''}]);
+    h += `<div class="bld-grid">` + blds.map(b =>
+      `<button class="bld-tile" onclick="navBuildingRooms('${esc(b).replace(/'/g,"\\'")}')">
+         <span class="bn">${esc(b)}</span><span class="bc">点击查看教室</span>
+       </button>`).join('') + '</div>';
+    box.innerHTML = h;
+    return;
+  }
+
+  // 排序（后端 sort 已排好，这里只做同名兜底）：
+  //   阶梯楼最前 → 其余按房间数降序（信息多的放上面）
+  const sorted = [...meta].sort((a, b) =>
+    (a.sort - b.sort) || a.display.localeCompare(b.display, 'zh'));
+
+  // 分组：阶梯楼 / 教学楼 / 其他场所（场地、虚拟教室）
+  // 分组只做视觉标题，【一律不折叠】——「什么楼都可选再跳转」是硬要求。
+  const groups = [
+    {tier: 'step', label: '阶梯教室楼', cls: 'grp-step'},
+    {tier: 'main', label: '教学楼', cls: 'grp-main'},
+    {tier: 'venue', label: '场地', cls: 'grp-venue'},
+    {tier: 'virtual', label: '虚拟教室 / 线上', cls: 'grp-virtual'},
+  ];
+
+  let h = renderBreadcrumb([{label: `${campus}校区`, act: ''}]);
+  h += `<div class="campus-hint">${esc(campus)}校区 · ${sorted.length} 处场所 · 点击任一栋查看当天空闲教室</div>`;
+
+  groups.forEach(g => {
+    const rows = sorted.filter(m => m.tier === g.tier);
+    if (!rows.length) return;
+    h += `<div class="grp-label ${g.cls}">${g.label}</div>`;
+    h += `<div class="bld-grid">` + rows.map(bldTileHtml).join('') + '</div>';
+  });
+  box.innerHTML = h;
+}
+
+function bldTileHtml(m) {
+  const badge = m.tier === 'step' ? '<span class="bld-badge step">阶梯</span>'
+    : m.roomCount >= 10 ? '<span class="bld-badge low">多</span>' : '';
+  const cls = m.tier === 'step' ? 'bld-tile step' : 'bld-tile';
+  const k = m.key.replace(/'/g, "\\'");
+  return `<button class="${cls}" onclick="navBuildingRooms('${k}')">
+      <span class="bn">${esc(m.display)} ${badge}</span>
+      <span class="bc">${m.roomCount} 间教室</span>
+    </button>`;
+}
+
+// ── 第二层：该楼全部教室 ──
+async function navBuildingRooms(bkey) {
+  const campus = currentCampus();
+  navStack = [{level:'buildings', campus}, {level:'rooms', campus, building:bkey}];
+  await renderRooms();
+}
+
+async function renderRooms() {
+  const box = document.getElementById('browse-level');
+  const { campus, building } = navStack[navStack.length - 1];
+  box.innerHTML = L();
+
+  const data = await loadDate(selDate);
+  const rooms = (data && data[campus] && data[campus][building]) || {};
+  const meta = (index.buildingMeta?.[campus] || []).find(m => m.key === building);
+  const dispBld = meta ? meta.display : building;
+
+  // 1 间房的楼：点进去直接看教室，不显示中间列表（M1 决策）
+  const names = Object.keys(rooms);
+  if (names.length === 1 && meta && meta.skipList) {
+    navRoomDetail(campus, building, names[0]);
+    return;
+  }
+
+  const crumbs = [
+    {label: `${campus}校区`, act: 'navBuildings()'},
+    {label: dispBld, act: ''},
+  ];
+
+  // 用搜索索引补归一化显示名与阶梯标记
+  //关键：searchIdx 初始为 null，必须先 await loadSearch()，
+  // 否则阶梯标记永远取不到 → 阶梯无法置顶（M2 实测踩坑）。
+  if (!searchIdx) await loadSearch();
+  const metaOf = {};
+  if (searchIdx) searchIdx.forEach(r => {
+    if (r.c === campus && r.b === building) metaOf[r.r] = r;
+  });
+
+  // 排序：阶梯优先 → 空闲节数降序 → 名称
+  // 注意布尔减法方向：a.isStep - b.isStep 才能让 isStep=true 的排前。
+  // （曾写反成b.isStep - a.isStep，结果 13 节全空闲的机房压过了阶梯教室。）
+  const list = names.map(rn => ({
+    rn,
+    free: (rooms[rn] || []).length,
+    periods: rooms[rn] || [],
+    isStep: metaOf[rn] ? !!metaOf[rn].st : false,
+    disp: metaOf[rn] ? metaOf[rn].d : rn,
+  })).sort((a, b) =>
+    (Number(b.isStep) - Number(a.isStep)) || (b.free - a.free)
+    || a.disp.localeCompare(b.disp, 'zh'));
+
+  const LIMIT = 15;
+  const shown = NAV_FOLD.roomsOpen ? list : list.slice(0, LIMIT);
+
+  let h = renderBreadcrumb(crumbs);
+  h += `<div class="suggest-hint">${selDate} · ${esc(dispBld)} · 共 ${list.length} 间
+        <span style="font-weight:400;color:var(--text-muted);">（阶梯置顶，空闲多的在前）</span></span>`;
+  h += '<div class="room-list-box">';
+  shown.forEach(r => {
+    const cls = r.isStep ? 'room-tile is-step' : 'room-tile';
+    const nb = r.free >= 8 ? 'high' : r.free >= 3 ? 'mid' : r.free === 0 ? 'zero' : 'mid';
+    const k = r.rn.replace(/'/g, "\\'");
+    h += `<button class="${cls}" onclick="navRoomDetail('${esc(campus)}','${esc(building)}','${k}')">
+        <span><span class="rn">${esc(r.disp)}</span>
+        ${r.isStep ? '<span class="bld-badge step">阶梯</span>' : ''}
+        <span class="rs">${r.free ? `第 ${r.periods.join('、')} 节空闲` : '全天无空闲'}</span></span>
+        <span class="room-free-n ${nb}">${r.free ? r.free + ' 节空' : '满'}</span>
+      </button>`;
+  });
+  h += '</div>';
+  if (list.length > LIMIT) {
+    h += `<button class="btn-primary" style="margin-top:12px" onclick="NAV_FOLD.roomsOpen=!NAV_FOLD.roomsOpen;renderRooms()">
+      ${NAV_FOLD.roomsOpen ? '收起' : `展开全部 ${list.length} 间`}</button>`;
+  }
+  box.innerHTML = h;
+}
+
+// ── 第三层：教室当天时段 ──
+async function navRoomDetail(campus, building, room) {
+  navStack = [{level:'buildings', campus}, {level:'rooms', campus, building},
+              {level:'room', campus, building, room}];
+  if (mode !== 'browse') switchMode('browse');
+  await renderRoomDetail();
+}
+
+async function renderRoomDetail() {
+  const box = document.getElementById('browse-level');
+  const { campus, building, room } = navStack[navStack.length - 1];
+  box.innerHTML = L();
+
+  const data = await loadDate(selDate);
+  const rooms = (data && data[campus] && data[campus][building]) || {};
+  const free = rooms[room] || [];
+  const all = getPeriods();
+  const freeSet = new Set(free);
+  const meta = (index.buildingMeta?.[campus] || []).find(m => m.key === building);
+  const dispBld = meta ? meta.display : building;
+  let dispRoom = room;
+  if (!searchIdx) await loadSearch();
+  if (searchIdx) {
+    const r = searchIdx.find(x => x.c === campus && x.b === building && x.r === room);
+    if (r) dispRoom = r.d || room;
+  }
+
+  // 当前节次（仅当选的就是今天时才有意义）
+  const nowPeriod = selDate === todayStr() ? currentPeriod() : null;
+
+  let h = renderBreadcrumb([
+    {label: `${campus}校区`, act: 'navBuildings()'},
+    {label: dispBld, act: `navBuildingRooms('${esc(building).replace(/'/g,"\\'")}')`},
+    {label: dispRoom, act: ''},
+  ]);
+
+  // ── 头部：教室名 + 操作行 ──
+  h += `<div class="room-hero">
+      <div class="room-name">${esc(dispRoom)}</div>
+      <div class="room-sub">${esc(selDate)} ${esc(weekdayCn(selDate))} · ${esc(campus)}校区 · ${esc(dispBld)}</div>
+      <div class="room-actions">
+        <button class="mini-btn" onclick="copyRoomLink()">复制此教室链接</button>
+        <button class="mini-btn ghost" onclick="goToday()">回到今天</button>
+      </div>
+    </div>`;
+
+  // ── 时间轴：13 节横向铺开，一眼看出哪个时段能坐 ──
+  h += `<div class="timeline">`;
+  all.forEach(p => {
+    const isFree = freeSet.has(p);
+    const isNow = nowPeriod === p;
+    h += `<div class="tl-cell ${isFree ? 'free' : 'busy'} ${isNow ? 'now' : ''}"
+              title="第${p}节 ${esc(index.periods[p])} ${isFree ? '空闲' : '占用'}">
+      <span class="tl-p">${p}</span>
+      <span class="tl-t">${esc(timeRangeShort(index.periods[p]))}</span>
+    </div>`;
+  });
+  h += `</div>
+    <div class="timeline-legend">
+      <span><i class="dot free"></i>空闲</span>
+      <span><i class="dot busy"></i>占用</span>
+      ${nowPeriod ? `<span><i class="dot now"></i>当前第${nowPeriod}节</span>` : ''}
+    </div>`;
+
+  // ── 结论卡：最长的连续空闲段（真正决定"能坐多久"）──
+  const runs = longestFreeRuns(all, freeSet);
+  h += `<div class="summary-card ${runs.length && runs[0].len >= 3 ? 'good' : 'warn'}">
+      <div class="sc-label">今日最长连续空闲</div>
+      <div class="sc-value">${runs.length ? `${runs[0].len} 节 · ${runs[0].label}` : '无空闲'}</div>
+      <div class="sc-sub">${runs.length
+        ? runs.slice(0, 3).map(r => `第${r.start}-${r.end}节（${esc(index.periods[r.start])} 起）`).join('　')
+        : '全天占用或未排课'}</div>
+    </div>`;
+
+  box.innerHTML = h;
+  document.getElementById('results').innerHTML = '';
+}
+
+// 当前节次（按 config.PERIODS 的时间区间判断，13 节）
+function currentPeriod() {
+  const now = new Date();
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const hit = Object.entries(index.periods || {}).find(([, t]) => {
+    const [a, b] = String(t).split('-');
+    if (!a || !b) return false;
+    const toM = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+    return mins >= toM(a) && mins <= toM(b);
+  });
+  return hit ? Number(hit[0]) : null;
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function weekdayCn(d) {
+  const dt = new Date(d + 'T00:00:00');
+  return '周' + ['日','一','二','三','四','五','六'][dt.getDay()];
+}
+
+// "08:20-09:05" → "08:20"（时间轴格子放不下整段）
+function timeRangeShort(t) {
+  return String(t).split('-')[0] || '';
+}
+
+// 最长连续空闲段：这才是用户真正关心的（"我能在这儿待几节"）
+function longestFreeRuns(all, freeSet) {
+  const runs = [];
+  let start = null;
+  for (const p of all) {
+    if (freeSet.has(p)) {
+      if (start === null) start = p;
+    } else if (start !== null) {
+      runs.push({start, end: p - 1, len: p - start, label: `${index.periods[start]} ~ ${index.periods[p - 1].split('-')[1] || index.periods[p - 1]}`});
+      start = null;
+    }
+  }
+  if (start !== null) {
+    const last = all[all.length - 1];
+    runs.push({start, end: last, len: last - start + 1,
+      label: `${index.periods[start]} ~ ${index.periods[last].split('-')[1] || index.periods[last]}`});
+  }
+  return runs.sort((a, b) => b.len - a.len);
+}
+
+// M4：深链 —— 复制当前教室的可分享链接
+async function copyRoomLink() {
+  const top = navStack[navStack.length - 1];
+  if (!top || top.level !== 'room') return;
+  const url = new URL(location.href.split('?')[0]);
+  url.searchParams.set('campus', top.campus);
+  url.searchParams.set('bld', top.building);
+  url.searchParams.set('room', top.room);
+  url.searchParams.set('date', selDate);
+  const link = url.toString();
+
+  try {
+    await navigator.clipboard.writeText(link);
+    toast('链接已复制，发给同学点开即达');
+  } catch (e) {
+    // 剪贴板 API 在非 HTTPS 或旧浏览器不可用 → 退化成弹窗手动复制
+    const ta = document.createElement('textarea');
+    ta.value = link;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); toast('链接已复制'); }
+    catch (e2) { prompt('手动复制此链接：', link); }
+    document.body.removeChild(ta);
+  }
+}
+
+function toast(msg) {
+  let t = document.getElementById('app-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'app-toast';
+    t.className = 'app-toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── 全局搜索 ──
+function clearGlobalSearch() {
+  const inp = document.getElementById('inp-global');
+  inp.value = '';
+  document.getElementById('search-clear').classList.remove('show');
+  document.getElementById('search-results').innerHTML = '';
+}
+
+async function doGlobalSearch() {
+  const inp = document.getElementById('inp-global');
+  const q = inp.value.trim();
+  const box = document.getElementById('search-results');
+  document.getElementById('search-clear').classList.toggle('show', !!q);
+  if (!q) { box.innerHTML = ''; return; }
+  if (!searchIdx) await loadSearch();
+
+  const hits = resolveQuery(q, currentCampus());
+  if (!hits.length) {
+    box.innerHTML = `<div class="empty-state" style="padding:20px 8px">
+      ${ICONS.empty}<div class="empty-title" style="font-size:13.5px;">没找到「${esc(q)}」</div>
+      <div class="empty-desc" style="font-size:12.5px;">试试只输楼号（如 9）或教室号（如 610）</div>
+    </div>`;
+    return;
+  }
+
+  let h = `<div class="suggest-hint">${hits.length} 个结果</div>`;
+  hits.forEach(r => {
+    const kindCls = r.type === 'room' ? 'sr-kind room' : 'sr-kind';
+    const kindTxt = r.type === 'room' ? '教室' : '教学楼';
+    const act = r.type === 'room'
+      ? `openResult('${esc(r.campus)}','${esc(r.building)}','${esc(r.room)}')`
+      : `openResult('${esc(r.campus)}','${esc(r.building)}','')`;
+    h += `<div class="sr-item" onclick="${act}">
+        <span><span class="srn">${esc(r.display)}</span><span class="srs">${esc(r.sub)}</span></span>
+        <span class="${kindCls}">${kindTxt}</span>
+      </div>`;
+  });
+  box.innerHTML = h;
+}
+
+function openResult(campus, building, room) {
+  const sel = document.getElementById('sel-campus');
+  if (sel.value !== campus) { sel.value = campus; }
+  if (room) navRoomDetail(campus, building, room);
+  else navBuildingRooms(building);
+}
 function renderFreshness(today, firstDate, lastDate, totalDays) {
   const bar = document.getElementById('status-bar');
   const txt = document.getElementById('status-text');
@@ -478,30 +1213,10 @@ async function init() {
   document.getElementById('sel-campus').innerHTML =
     index.campuses.map(c => `<option>${c}</option>`).join('');
   document.getElementById('sel-campus').onchange = onCampusChange;
-  // 默认校区：优先用后端导出的 default_campus（换学校也不用改前端）
-  // 兼容老数据：老 index.json 没有该字段时，退回「含泰达选泰达」的老行为
-  const defaultCampus =
-    index.default_campus ||
-    (index.campuses.includes('泰达') ? '泰达' : index.campuses[0]);
-  if (defaultCampus) {
-    document.getElementById('sel-campus').value = defaultCampus;
+  // 默认校区：泰达（用户要求）
+  if (index.campuses.includes('泰达')) {
+    document.getElementById('sel-campus').value = '泰达';
   }
-
-  // 站点文案跟随数据：学校名 / 校区列表（换学校不用改前端）
-  const schoolName = index.school || '';
-  if (schoolName) {
-    document.title = `${schoolName} 空闲教室查询`;
-    const h1 = document.querySelector('.header h1');
-    if (h1) h1.textContent = `${schoolName} 空闲教室`;
-  }
-  const campusText = (index.campuses || []).join(' + ');
-  const subEl = document.querySelector('.header .subtitle');
-  if (subEl && schoolName) {
-    subEl.innerHTML = `${schoolName}${campusText ? ' · ' + campusText : ''} · ` +
-      `<span id="update-time">加载中...</span>`;
-  }
-  const campusBadge = document.getElementById('badge-campus');
-  if (campusBadge && campusText) campusBadge.textContent = campusText;
 
   // Period selectors
   const periodOpts = Object.entries(index.periods).map(([p, t]) =>
@@ -542,7 +1257,7 @@ async function init() {
   // Load buildings for default campus
   await onCampusChange();
 
-  // Autocomplete
+  // Autocomplete（旧「查教室空闲时段」模式保留）
   document.getElementById('inp-classroom').oninput = function() {
     clearTimeout(this._acTimer);
     const q = this.value.trim();
@@ -550,7 +1265,77 @@ async function init() {
     this._acTimer = setTimeout(() => autoComplete(q), 300);
   };
 
+  // M2 全局搜索：输入即搜（防抖 200ms），回车直达第一个结果
+  const gi = document.getElementById('inp-global');
+  gi.oninput = function() {
+    clearTimeout(this._t);
+    const v = this.value;
+    this._t = setTimeout(() => doGlobalSearch(), 200);
+  };
+  gi.onkeydown = function(e) {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    clearTimeout(this._t);
+    doGlobalSearch().then(() => {
+      const first = document.querySelector('#search-results .sr-item');
+      if (first) first.click();
+    });
+  };
+
+  // M4 深链：带参链接直接落到对应层级（装到桌面后点开即达）
+  //   ?campus=泰达&bld=9-&room=16阶梯(d)&date=2026-10-19  → 教室时段
+  //   ?campus=泰达&bld=9-&date=...                        → 该楼教室列表
+  //   ?room=9-16&date=...                                 → 友好写法，自动解析
+  // 解析一律走 M1 的 resolveQuery，宁可退回首页也不编造不存在的教室。
+  const deep = await consumeDeepLink();
+
+  // M2：默认进入「选教室」第一层（有深链则落到深链指定层级）
+  if (mode === 'browse' && !deep) await navBuildings();
+
   _ready = true;
+}
+
+async function consumeDeepLink() {
+  const p = new URLSearchParams(location.search);
+  const wantCampus = p.get('campus');
+  const wantBld = p.get('bld');
+  const wantRoom = p.get('room');
+  const wantDate = p.get('date');
+  if (!wantRoom && !wantBld) return false;
+
+  // 日期：校验必须在 index.dates 里，否则回落今天
+  if (wantDate && (index.dates || []).includes(wantDate)) pickDate(wantDate);
+
+  if (wantCampus && index.campuses.includes(wantCampus)) {
+    document.getElementById('sel-campus').value = wantCampus;
+  }
+  const campus = document.getElementById('sel-campus').value;
+  if (!searchIdx) await loadSearch();
+
+  // 楼栋：允许友好写法（9 / 9号楼），但最终必须落到真实键
+  let bld = wantBld;
+  if (bld) {
+    const cand = resolveQuery(bld, campus).find(r => r.type === 'building');
+    bld = cand ? cand.building : bld;
+  }
+
+  // 教室：未指定 bld 时先按教室名反查所在楼
+  let room = wantRoom;
+  if (room && !bld) {
+    const hits = resolveQuery(room, campus).filter(r => r.type === 'room');
+    if (hits.length) { bld = hits[0].building; room = hits[0].room; }
+  }
+
+  // 楼栋真实存在性校验：不存在就退回首页，别显示空壳
+  const bldExists = bld && (index.buildings?.[campus] || []).includes(bld);
+  if (!bldExists) { await navBuildings(); return false; }
+
+  if (room) {
+    const roomExists = searchIdx.some(r => r.c === campus && r.b === bld && r.r === room);
+    if (roomExists) { await navRoomDetail(campus, bld, room); return true; }
+  }
+  await navBuildingRooms(bld);
+  return true;
 }
 
 // ═══════════════════════════════════════
@@ -576,6 +1361,8 @@ function pickDate(d) {
   // Scroll into view
   const chip = document.querySelector(`.date-chip[data-date="${d}"]`);
   if (chip) chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  // M2：日期变了，三层导航的空闲状态要跟着重算
+  if (_ready && mode === 'browse') renderNavStack();
 }
 
 function shiftDate(dir) {
@@ -643,6 +1430,10 @@ async function onCampusChange() {
   document.getElementById('sel-building-room').innerHTML = '<option value="">全部</option>' + opts;
   document.getElementById('sel-building-range').innerHTML = '<option value="">全部</option>' + opts;
   R(''); // clear old results from previous campus
+  // M2：切换校区要回到第一层，且重跑当前搜索
+  if (_ready && mode === 'browse') { navStack = []; await renderBuildings(); }
+  const q = document.getElementById('inp-global');
+  if (q && q.value.trim()) doGlobalSearch();
 }
 
 // ═══════════════════════════════════════
@@ -651,11 +1442,30 @@ async function onCampusChange() {
 function switchMode(m) {
   mode = m;
   document.querySelectorAll('.toggle-row button').forEach(b => b.classList.remove('active'));
-  document.getElementById('btn-' + m).classList.add('active');
-  ['room','range','classroom'].forEach(x => {
-    document.getElementById('panel-' + x).style.display = x === m ? '' : 'none';
+  const btn = document.getElementById('btn-' + m);
+  if (btn) btn.classList.add('active');
+  ['browse','room','range','classroom'].forEach(x => {
+    const p = document.getElementById('panel-' + x);
+    if (p) p.style.display = x === m ? '' : 'none';
   });
-  R('');
+  if (m !== 'browse') {
+    R('');
+  } else if (navStack.length) {
+    renderNavStack();
+  } else {
+    // 关键兜底：navStack 空时（如从其他模式切回、或深链解析失败后），
+    // 必须主动建第一层。否则面板显示但内容空白 —— 用户看到白屏。
+    navBuildings();
+  }
+}
+
+// 按导航栈重绘（切换日期 / 切换校区后用）
+async function renderNavStack() {
+  const top = navStack[navStack.length - 1];
+  if (!top) return navBuildings();
+  if (top.level === 'buildings') return renderBuildings();
+  if (top.level === 'rooms') return renderRooms();
+  if (top.level === 'room') return renderRoomDetail();
 }
 
 // ═══════════════════════════════════════
