@@ -175,6 +175,17 @@ def main():
     chk("test_refresh_crawl.py 全绿", m and int(m.group(2)) == 0,
         (r.stdout + r.stderr)[-400:] if not m else f"{m.group(1)} 项")
 
+    # ── ⑩ 推送辅助脚本 ──
+    print("\n[⑩] 推送辅助（DNS 不通时的通道）")
+    ur = open(os.path.join(ROOT, "update_ref.py"), encoding="utf-8").read()
+    chk("update_ref.py 存在", os.path.exists(os.path.join(ROOT, "update_ref.py")))
+    chk("只从环境变量读 token", "GH_TOKEN" in ur and "ghp_" not in ur)
+    chk("默认 dry-run（不显式 --commit 不动）", '"--commit" not in sys.argv' in ur)
+    chk("有非快进保护（父提交校验）",
+        "不是纯快进" in ur and "HEAD^" in ur)
+    chk("push.bat 为 CRLF 行尾（cmd.exe 不执行 LF-only）",
+        open(os.path.join(ROOT, "push.bat"), "rb").read().count(b"\r\n") > 10)
+
     # ── ⑨ 凭据扫描 ──
     print("\n[⑨] 凭据扫描")
     r = subprocess.run(["git", "diff", "--cached", "--name-only"],

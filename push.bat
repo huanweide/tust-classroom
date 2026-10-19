@@ -22,12 +22,21 @@ echo [3/4] 推送到 origin main...
 git push origin main
 if errorlevel 1 (
   echo.
-  echo [失败] 推送未成功。常见原因：
-  echo   - 凭据弹窗被关掉或输错
-  echo   - PAT 没有 repo 权限
-  echo   - 网络/DNS 不通（可试 ghssh 远端：git remote add ghssh git@github.com:huanweide/tust-classroom.git）
-  pause
-  exit /b 1
+  echo [提示] 常规推送失败，尝试 REST 兜底（只动 ref 指针）...
+  echo        需要先设置 GH_TOKEN 环境变量。
+  if "%GH_TOKEN%"=="" (
+    echo [需要] 请先执行：set GH_TOKEN=你的PAT
+    echo        然后重跑本脚本，或手动执行：
+    echo          python update_ref.py --commit
+    pause
+    exit /b 1
+  )
+  python update_ref.py --commit
+  if errorlevel 1 (
+    echo [失败] REST 兜底也未成功。
+    pause
+    exit /b 1
+  )
 )
 
 echo.
