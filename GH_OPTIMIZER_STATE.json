@@ -1,6 +1,6 @@
 {
-  "lastOptimized": "2026-10-05",
-  "round": 1,
+  "lastOptimized": "2026-10-26",
+  "round": 2,
   "status": "optimized",
   "direction": "整体转向新方向",
   "repo": "huanweide/tust-classroom",
@@ -17,7 +17,8 @@
     "README 完全重写（新定位+对比表+两条快速开始路线），删除复制来的无关段落",
     "新增 docs/ADAPTER_GUIDE.md、docs/ARCHITECTURE.md、CHANGELOG.md",
     "新增 pyproject.toml/pytest.ini/requirements-dev.txt/package.json，.gitignore 补全凭据防护",
-    "保留全部老入口与表结构，作者本机定时任务与本地数据库零影响"
+    "保留全部老入口与表结构，作者本机定时任务与本地数据库零影响",
+    "S1/S2/L11 自动修复(引擎)"
   ],
   "decisionLog": [
     "存活评估：检索中英文同类（曲阜师大/华科/北邮/UNC/博洛尼亚等）全为单校单实现小项目，无碾压级替代；本校数据本身即壁垒 → 保留",
