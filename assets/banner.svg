@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-label="CampusFreeRoom">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a1017"/>
+      <stop offset="0.55" stop-color="#12202c"/>
+      <stop offset="1" stop-color="#05080d"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbbf24"/>
+      <stop offset="1" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="320" fill="url(#bg)"/>
+  <g transform="translate(160,160)">
+    <rect x="-58" y="-58" width="116" height="116" rx="20" fill="none" stroke="url(#ring)" stroke-width="13"/>
+    <path d="M 0 -38 V 38 M -38 0 H 38" stroke="url(#ring)" stroke-width="10" stroke-linecap="round"/>
+    <rect x="-32" y="-32" width="26" height="26" rx="6" fill="url(#ring)"/>
+  </g>
+  <text x="300" y="150" fill="#eaf2fb" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="68" font-weight="800">CampusFree<tspan fill="#fbbf24">Room</tspan></text>
+  <text x="304" y="204" fill="#b7c9dc" font-family="Microsoft YaHei, Segoe UI, Helvetica, Arial, sans-serif" font-size="27">高校空闲教室查询接入框架 · 换一所学校 = 加一个文件</text>
+  <g font-family="Microsoft YaHei, Segoe UI, Helvetica, Arial, sans-serif" font-size="21" fill="#a8d8f5">
+    <rect x="304" y="234" width="210" height="44" rx="22" fill="#38bdf81a" stroke="#2b5170"/>
+    <text x="322" y="262">102 项单元测试</text>
+    <rect x="534" y="234" width="210" height="44" rx="22" fill="#38bdf81a" stroke="#2b5170"/>
+    <text x="552" y="262">零后端离线 PWA</text>
+    <rect x="764" y="234" width="250" height="44" rx="22" fill="#38bdf81a" stroke="#2b5170"/>
+    <text x="782" y="262">换校仅需 1 个文件</text>
+  </g>
+</svg>

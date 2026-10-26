@@ -37,10 +37,14 @@ def pipe(src, dst):
     except OSError:
         pass
     finally:
-        try: src.close()
-        except OSError: pass
-        try: dst.close()
-        except OSError: pass
+        try:
+            src.close()
+        except OSError:
+            pass
+        try:
+            dst.close()
+        except OSError:
+            pass
 
 
 def handle(client, upstream_ips):
@@ -89,8 +93,10 @@ def handle(client, upstream_ips):
         else:
             upstream.sendall(first)
     except OSError:
-        try: client.close()
-        except OSError: pass
+        try:
+            client.close()
+        except OSError:
+            pass
         return
 
     threading.Thread(target=pipe, args=(client, upstream), daemon=True).start()
@@ -104,8 +110,8 @@ def pick_ip():
     不用在建连接时等超时 —— 实测踩坑：把探测放进 handle()
     会让 CONNECT 握手等 10-30 秒，客户端（curl/git）早就超时了（HTTP 000）。
     """
-    import queue
     import concurrent.futures
+    import queue
 
     ok_ips, q = [], queue.Queue()
 
@@ -165,7 +171,7 @@ def main():
                              stderr=subprocess.STDOUT)
         open(PID_FILE, "w").write(str(p.pid))
         print(f"转发已在后台运行：127.0.0.1:{args.port} → GitHub IP 池（PID {p.pid}）")
-        print(f"\n推送命令：")
+        print("\n推送命令：")
         print(f"  git -c http.proxy=http://127.0.0.1:{args.port} "
               f"-c https.proxy=http://127.0.0.1:{args.port} push origin main")
         return 0

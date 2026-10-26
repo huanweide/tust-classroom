@@ -13,7 +13,6 @@
     - 只从环境变量读 token，绝不写文件
     - 默认 dry-run，必须显式 --commit 才动
 """
-import base64
 import json
 import os
 import subprocess

@@ -110,7 +110,7 @@ def main():
 
     print(f"\n完成：{ok} 成功 / {fail} 失败 / {skip} 跳过")
     print("GitHub Pages 约 1-2 分钟生效："
-          f"https://huanweide.github.io/tust-classroom/")
+          "https://huanweide.github.io/tust-classroom/")
     return 1 if fail else 0
 
 

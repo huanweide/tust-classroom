@@ -211,7 +211,7 @@ def parse_room_query(q):
     # ── B. 楼栋前缀：9-16 / 9-16阶梯 / 9号楼16 / 916阶梯 ──
     # 关键：楼号后必须有分隔符（- / 号楼），否则 16阶梯 会被切成 1号楼 + 6阶梯。
     # 所以 B 只吃「明确带 - 或 号楼」的写法；纯连写的 916 交给 D 用正则反解。
-    m = re.match(rf"^(\d{{1,2}})(?:-|号楼)(\d{{1,3}})(阶梯.*)?$", norm)
+    m = re.match(r"^(\d{1,2})(?:-|号楼)(\d{1,3})(阶梯.*)?$", norm)
     if m:
         bld = int(m.group(1))
         no = int(m.group(2))
@@ -282,7 +282,7 @@ def parse_room_query(q):
     elif "阶梯" in norm or "阶" in norm:
             # 「9阶梯」「916阶梯」这类库里不存在的名字，不要退化成楼栋
             # —— 用户明确写了阶梯却看到一栋楼，比搜不到更困惑。
-            if re.fullmatch(rf"\d{{1,4}}阶梯(\(.*\))?", norm):
+            if re.fullmatch(r"\d{1,4}阶梯(\(.*\))?", norm):
                 pass  # E/B2 段已精确处理；解析不出真实教室就是真不存在
             else:
                 cands.append({"kind": "building", "score": 70, "bld_key": "阶梯",

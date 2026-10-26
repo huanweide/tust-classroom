@@ -168,10 +168,10 @@ def main():
     print("=" * 62)
 
     print("\n[1/4] 爬取前体检（只读）")
-    before = inspect_db()
+    inspect_db()
 
     plan = build_date_plan(args.days, args.repast, args.prune_days)
-    print(f"\n[2/4] 计划")
+    print("\n[2/4] 计划")
     print(f"  待爬日期：{len(plan['crawl'])} 天"
           f"（{plan['crawl'][0]} ~ {plan['crawl'][-1]}）")
     if args.repast:
@@ -184,7 +184,7 @@ def main():
         return 0
 
     # 覆盖式清理：先删后爬，保证以最新抓取为准
-    print(f"\n[3/4] 覆盖清理（DELETE 后重插，避免 INSERT OR IGNORE 留旧值）")
+    print("\n[3/4] 覆盖清理（DELETE 后重插，避免 INSERT OR IGNORE 留旧值）")
     removed = clear_dates([d.strftime("%Y-%m-%d") for d in plan["crawl"]])
     print(f"  已清除 {removed:,} 行旧数据")
 
@@ -195,7 +195,7 @@ def main():
     if args.skip_crawl:
         print("\n[--skip-crawl] 未启动爬虫。")
     else:
-        print(f"\n[4/4] 启动爬虫（CDP 复用 Edge 登录态）")
+        print("\n[4/4] 启动爬虫（CDP 复用 Edge 登录态）")
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         try:
             from crawler_playwright import TUSTCrawlerPW

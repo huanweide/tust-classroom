@@ -31,8 +31,10 @@ def pipe(src, dst):
         pass
     finally:
         for s in (src, dst):
-            try: s.close()
-            except OSError: pass
+            try:
+                s.close()
+            except OSError:
+                pass
 
 
 def handle(client, ip):
@@ -43,7 +45,8 @@ def handle(client, ip):
         while b"\r\n\r\n" not in first:
             c = client.recv(4096)
             if not c:
-                client.close(); return
+                client.close()
+                return
             first += c
             if len(first) > 16384:
                 break
@@ -59,8 +62,10 @@ def handle(client, ip):
             up = socket.create_connection((ip, 80), timeout=20)
             up.sendall(first)
     except OSError:
-        try: client.close()
-        except OSError: pass
+        try:
+            client.close()
+        except OSError:
+            pass
         return
     threading.Thread(target=pipe, args=(client, up), daemon=True).start()
     threading.Thread(target=pipe, args=(up, client), daemon=True).start()

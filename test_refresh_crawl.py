@@ -17,9 +17,11 @@ PASS = FAIL = 0
 def chk(name, cond, extra=""):
     global PASS, FAIL
     if cond:
-        PASS += 1; print(f"  PASS  {name}")
+        PASS += 1
+        print(f"  PASS  {name}")
     else:
-        FAIL += 1; print(f"  FAIL  {name}" + (f"\n         {extra}" if extra else ""))
+        FAIL += 1
+        print(f"  FAIL  {name}" + (f"\n         {extra}" if extra else ""))
 
 # 用临时 DB，绝不碰真实数据
 tmp = tempfile.mkdtemp()

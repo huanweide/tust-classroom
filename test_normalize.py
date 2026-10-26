@@ -89,7 +89,6 @@ def main():
     r = N.resolve("9-", sidx, "泰达")[0]
     # 房间数必须等于「该楼在索引里真实出现的教室数」，不能写死 ——
     # 写死会在换数据源（本地 DB 40 天 vs 线上 130 天）时误报。
-    real = len({x["b"] for x in sidx if x["c"] == "泰达" and x["b"] == "9-"})
     real_rooms = len({x["r"] for x in sidx if x["c"] == "泰达" and x["b"] == "9-"})
     check("9号楼 房间数与索引一致", r["room_count"], real_rooms)
     check("9号楼 带阶梯标记", r["is_step_bld"], True)
