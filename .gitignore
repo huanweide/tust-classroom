@@ -21,7 +21,6 @@ node_modules/
 e2e_shots/
 e2e_result.json
 
-# 个人收款码：本地保留备用，但绝不进公开仓库（个人金融信息）
 static/sponsor/
 
 # DNS 转发进程 PID（本地开发辅助，不入库）
