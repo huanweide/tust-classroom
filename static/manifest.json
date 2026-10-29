@@ -1,7 +1,7 @@
 {
     "name": "TUST 空闲教室",
     "short_name": "空闲教室",
-    "description": "天津科技大学空闲教室实时查询系统",
+    "description": "某高校空闲教室实时查询系统",
     "start_url": "./",
     "display": "standalone",
     "background_color": "#f0f2f5",

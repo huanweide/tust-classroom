@@ -289,7 +289,7 @@ ok('切回后 9号楼仍置顶', /9号楼/.test(backFirst), backFirst);
 // ── 13. 隐私：页面不得出现真名 / 收款码 ──
 console.log('[13] 隐私与赞助默认关闭');
 const bodyHtml = await page.content();
-for (const bad of ['樊斯瑞', '瑞宝宝', 'wechat-qr', 'sponsor-box', '收款码']) {
+for (const bad of ['huanweide', '瑞宝宝', 'wechat-qr', 'sponsor-box', '收款码']) {
   ok(`页面不含「${bad}」`, !bodyHtml.includes(bad));
 }
 ok('作者署名为 ReTri', bodyHtml.includes('ReTri'));

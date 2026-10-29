@@ -11,7 +11,7 @@ def test_schools_lists_tust(capsys):
     rc = cli.cmd_schools(A())
     out = capsys.readouterr().out
     assert rc == 0
-    assert "tust" in out and "天津科技大学" in out
+    assert "tust" in out and "某高校" in out
 
 
 def test_check_passes_for_tust(capsys):

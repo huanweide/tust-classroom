@@ -8,7 +8,7 @@
 [![Tests](https://img.shields.io/badge/单元测试-102%20passed-brightgreen)](#-质量保障)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![零后端](https://img.shields.io/badge/部署-纯静态%20Pages-blue?logo=github)](https://huanweide.github.io/tust-classroom/)
-[![在线访问](https://img.shields.io/badge/手机直接打开-天津科技大学%20TUST-success)](https://huanweide.github.io/tust-classroom/)
+[![在线访问](https://img.shields.io/badge/手机直接打开-某高校%20TUST-success)](https://huanweide.github.io/tust-classroom/)
 <!-- /badges -->
 
 # 🏫 CampusFreeRoom · 高校空闲教室查询接入框架
@@ -20,7 +20,7 @@
 > **自动流**：复用已登录浏览器 → 按 校区 → 教学楼 → 节次 翻数据 → SQLite 去重入库 → 按天分片导出 JSON → 发布到 Pages
 > `采集 → 去重 → 导出 → 发布`
 
-**已上线示例（天津科技大学 泰达 + 河西双校区）**：<https://huanweide.github.io/tust-classroom/>
+**已上线示例（某高校 泰达 + 河西双校区）**：<https://huanweide.github.io/tust-classroom/>
 
 [30 秒看懂](#-30-秒看懂) · [解决什么](#-这个项目解决什么) · [特性](#-特性--features) · [快速开始](#-快速开始--quick-start) · [命令行](#-命令行速查) · [架构](#-架构--architecture) · [接入你的学校](#-接入你自己的学校) · [路线图](#-路线图--roadmap) · [质量保障](#-质量保障) · [贡献](#-贡献) · [License](#-license)
 
@@ -72,7 +72,7 @@ $ 手机浏览器打开 huanweide.github.io/tust-classroom/
 | 测试 | 基本没有 | 102 项单元测试 + 真实浏览器端到端 |
 | 契约校验 | 无 | `check` 命令提前查出适配器写漏了啥 |
 
-第一所支持的学校是**天津科技大学（TUST）**，双校区、13 节次、已上线运行。
+第一所支持的学校是**某高校（TUST）**，双校区、13 节次、已上线运行。
 
 ---
 
@@ -138,14 +138,14 @@ $ python -m campusfree schools
 
 ID          学校                  节次    默认校区      教务系统
 ------------------------------------------------------------------------------------------
-tust        天津科技大学              13    泰达        http://jwxtxs.tust.edu.cn:46110
+tust        某高校              13    泰达        http://jwxtxs.tust.edu.cn:46110
 ```
 
 **`check` 的真实输出**：
 
 ```
 $ python -m campusfree check --school tust
-体检对象：天津科技大学（tust）
+体检对象：某高校（tust）
   教务系统：http://jwxtxs.tust.edu.cn:46110/student/teachingResources/freeClassroom/index
   节次数量：13
   默认校区：泰达
@@ -255,7 +255,7 @@ python meta_only.py             # 写盘（每日 JSON 一概不碰）
 
 | ID | 学校 | 校区 | 节次 | 状态 |
 |----|------|------|------|------|
-| `tust` | 天津科技大学 | 泰达 + 河西 | 13 | ✅ 官方适配器，已上线 [在线查询](https://huanweide.github.io/tust-classroom/) |
+| `tust` | 某高校 | 泰达 + 河西 | 13 | ✅ 官方适配器，已上线 [在线查询](https://huanweide.github.io/tust-classroom/) |
 
 **你的学校不在这？** 看下面，约 30 分钟，欢迎提 PR。
 
@@ -290,7 +290,7 @@ class NkuAdapter(SchoolAdapter):
 ## 🏫 路线图 / Roadmap
 
 - [x] 通用框架抽出（`campusfree/` 9 模块）
-- [x] 首个官方适配器：天津科技大学（双校区 / 13 节次 / 已上线）
+- [x] 首个官方适配器：某高校（双校区 / 13 节次 / 已上线）
 - [x] 102 项单元测试（原项目为零测试）
 - [x] CI：Python 3.11 + 3.12 矩阵，ruff + pytest + CLI 冒烟 + 前端资源校验
 - [x] 导出安全闸门 + 只读体检模式
@@ -371,7 +371,7 @@ python keepalive.py --once                 # 照常可用
 │   ├── registry.py        #   适配器自动发现
 │   └── cli.py             #   命令行
 ├── adapters/              # 各校适配器（新增学校只动这里）
-│   └── tust.py            #   天津科技大学
+│   └── tust.py            #   某高校
 ├── tests/                 # 102 项单元测试
 ├── docs/
 │   ├── ADAPTER_GUIDE.md   #   30 分钟接入指南
@@ -413,7 +413,7 @@ python keepalive.py --once                 # 照常可用
 
 ## 🏫 License
 
-[MIT](LICENSE) · 作者 [ReTri · 樊斯瑞](https://github.com/huanweide)
+[MIT](LICENSE) · 作者 [ReTri · huanweide](https://github.com/huanweide)
 
 ---
 

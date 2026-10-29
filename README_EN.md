@@ -387,7 +387,7 @@ Unofficial tool; data comes from each university's portal. Schedules may change 
 
 ## 🏫 License
 
-[MIT](LICENSE) · by [ReTri · 樊斯瑞](https://github.com/huanweide)
+[MIT](LICENSE) · by [ReTri · huanweide](https://github.com/huanweide)
 
 ---
 

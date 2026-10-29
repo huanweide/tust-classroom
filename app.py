@@ -1,6 +1,6 @@
 """空闲教室查询 API — Flask 后端（v2：由 campusfree 驱动，换学校只改环境变量）
 
-默认服务天津科技大学（tust）。想切到别的学校：
+默认服务某高校（tust）。想切到别的学校：
     set CAMPUSFREE_SCHOOL=nku   (Windows) / export CAMPUSFREE_SCHOOL=nku  (Mac/Linux)
     python app.py
 """

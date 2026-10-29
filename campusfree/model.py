@@ -59,7 +59,7 @@ class Period:
 class SchoolProfile:
     """学校画像：框架在真正开爬之前需要知道的静态信息"""
     school_id: str                        # 英文短名，用于 CLI --school，如 "tust"
-    school_name: str                      # 中文全称，如 "天津科技大学"
+    school_name: str                      # 中文全称，如 "某高校"
     base_url: str                         # 教务系统根地址
     periods: Dict[int, str]               # 节次 → 时间
     entry_path: str = ""                  # 空闲教室页相对路径（可为空则直接用 base_url）

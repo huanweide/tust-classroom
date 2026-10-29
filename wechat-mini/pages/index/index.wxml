@@ -7,7 +7,7 @@
   <!-- 头部 -->
   <view class="header">
     <view class="header-title">TUST 空闲教室</view>
-    <view class="header-sub">天津科技大学 · 泰达 & 河西</view>
+    <view class="header-sub">某高校 · 泰达 & 河西</view>
   </view>
 
   <!-- 校区选择 -->
@@ -130,7 +130,7 @@
   <!-- 底部 -->
   <view class="footer">
     <view class="footer-text">数据更新于 {{updated}}</view>
-    <view class="footer-text">天津科技大学 空闲教室查询 · 非官方</view>
+    <view class="footer-text">某高校 空闲教室查询 · 非官方</view>
   </view>
 
 </view>

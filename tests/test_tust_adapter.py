@@ -14,7 +14,7 @@ def test_adapter_contract(tust_adapter):
 def test_profile_values(tust_adapter):
     p = tust_adapter.profile
     assert p.school_id == "tust"
-    assert p.school_name == "天津科技大学"
+    assert p.school_name == "某高校"
     assert p.base_url == "http://jwxtxs.tust.edu.cn:46110"
     assert len(p.periods) == 13
     assert p.periods[1] == "08:20-09:05"
@@ -128,7 +128,7 @@ def test_login_detection(tust_adapter):
 def test_registry_discovers_tust():
     assert "tust" in list_adapters()
     assert get_adapter("tust").profile.school_id == "tust"
-    assert schools_summary()[0]["school_name"] == "天津科技大学"
+    assert schools_summary()[0]["school_name"] == "某高校"
 
 
 def test_unknown_school_gives_hint():

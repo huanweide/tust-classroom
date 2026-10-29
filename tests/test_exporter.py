@@ -52,7 +52,7 @@ def test_index_semantics(tmp_store, tust_adapter, tmp_path):
     assert index["updated"] == "2026-10-06"
     assert index["dates"] == ["2026-10-05", "2026-10-06"]
     assert index["periods"]["13"] == "21:20-22:05"
-    assert index["school"] == "天津科技大学"
+    assert index["school"] == "某高校"
     # generated_at 必须是可解析的时间戳
     datetime.fromisoformat(index["generated_at"])
 

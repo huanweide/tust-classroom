@@ -1,4 +1,4 @@
-"""天津科技大学（TUST）适配器 —— 本框架的第一个官方适配器
+"""某高校（TUST）适配器 —— 本框架的第一个官方适配器
 
 数据来源：TUST URP 教务系统「空闲教室」模块。
 接口形状（F12 抓包得到，换学校时照这个思路自己抓一遍）：
@@ -49,19 +49,19 @@ CAMPUS_FALLBACK = [("02", "泰达"), ("01", "河西")]
 
 
 class TustAdapter(SchoolAdapter):
-    """天津科技大学空闲教室适配器"""
+    """某高校空闲教室适配器"""
 
     @property
     def profile(self) -> SchoolProfile:
         return SchoolProfile(
             school_id="tust",
-            school_name="天津科技大学",
+            school_name="某高校",
             base_url=BASE_URL,
             periods=PERIODS,
             entry_path="/student/teachingResources/freeClassroom/index",
             default_campus="泰达",
             campus_order=["泰达", "河西"],
-            source_note="数据来源：天津科技大学 URP 教务系统（非官方工具）",
+            source_note="数据来源：某高校 URP 教务系统（非官方工具）",
         )
 
     @property

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 爬取天津科技大学教务系统空闲教室数据，通过网页和PWA对外展示，支持按节次/教室查询空闲时段。
+**Goal:** 爬取某高校教务系统空闲教室数据，通过网页和PWA对外展示，支持按节次/教室查询空闲时段。
 
 **Architecture:** 单机 Python 爬虫(crawler.py)定时从 URP 教务系统抓数据存 SQLite → Flask(app.py) 读 SQLite 提供 JSON API → 单页 PWA 前端 → Cloudflare Tunnel 暴露到公网。
 
@@ -114,7 +114,7 @@ import config
 
 
 class TUSTCrawler:
-    """天津科技大学教务系统爬虫"""
+    """某高校教务系统爬虫"""
 
     def __init__(self):
         self.session = requests.Session()
