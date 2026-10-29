@@ -8,7 +8,7 @@
 [![Tests](https://img.shields.io/badge/单元测试-102%20passed-brightgreen)](#-质量保障)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![零后端](https://img.shields.io/badge/部署-纯静态%20Pages-blue?logo=github)](https://huanweide.github.io/tust-classroom/)
-[![在线访问](https://img.shields.io/badge/手机直接打开-某高校%20TUST-success)](https://huanweide.github.io/tust-classroom/)
+[![在线访问](https://img.shields.io/badge/手机直接打开-某高校-success)](https://huanweide.github.io/tust-classroom/)
 <!-- /badges -->
 
 # 🏫 CampusFreeRoom · 高校空闲教室查询接入框架
@@ -20,7 +20,7 @@
 > **自动流**：复用已登录浏览器 → 按 校区 → 教学楼 → 节次 翻数据 → SQLite 去重入库 → 按天分片导出 JSON → 发布到 Pages
 > `采集 → 去重 → 导出 → 发布`
 
-**已上线示例（某高校 泰达 + 河西双校区）**：<https://huanweide.github.io/tust-classroom/>
+**已上线示例（某高校双校区）**：<https://huanweide.github.io/tust-classroom/>
 
 [30 秒看懂](#-30-秒看懂) · [解决什么](#-这个项目解决什么) · [特性](#-特性--features) · [快速开始](#-快速开始--quick-start) · [命令行](#-命令行速查) · [架构](#-架构--architecture) · [接入你的学校](#-接入你自己的学校) · [路线图](#-路线图--roadmap) · [质量保障](#-质量保障) · [贡献](#-贡献) · [License](#-license)
 
@@ -42,7 +42,7 @@ $ 我（想找间空教室自习）
 
 ```
 $ 手机浏览器打开 huanweide.github.io/tust-classroom/
-  → 选校区：泰达 / 河西
+  → 选校区：校区 A / 校区 B
   → 选节次：第 1-13 节
   → 立刻看到哪些教室空着，可「添加到主屏」当 App
   → 不需要校园网、不需要 VPN、不需要登录，断网也能看（Service Worker 缓存）
@@ -72,7 +72,7 @@ $ 手机浏览器打开 huanweide.github.io/tust-classroom/
 | 测试 | 基本没有 | 102 项单元测试 + 真实浏览器端到端 |
 | 契约校验 | 无 | `check` 命令提前查出适配器写漏了啥 |
 
-第一所支持的学校是**某高校（TUST）**，双校区、13 节次、已上线运行。
+第一所支持的学校是**某高校**，双校区、13 节次、已上线运行。
 
 ---
 
@@ -91,7 +91,7 @@ $ 手机浏览器打开 huanweide.github.io/tust-classroom/
 
 ## 🏫 快速开始 / Quick Start
 
-### 路线 A：我只是想查空教室（TUST 同学）
+### 路线 A：我只是想查空教室（该校同学）
 
 直接用这个网址，不用装任何东西：
 
@@ -103,6 +103,8 @@ $ 手机浏览器打开 huanweide.github.io/tust-classroom/
 
 ### 路线 B：我想让我自己的学校也能用（开发者）
 
+> 说明：下列命令中的 `your-school` 为**示例适配器 ID**，请以 `python -m campusfree schools` 实际输出的 ID 为准（文档已脱敏，不绑定具体学校）。
+
 ```bash
 # 1. 装依赖
 pip install -r requirements-dev.txt
@@ -112,10 +114,10 @@ playwright install chromium
 python -m campusfree schools
 
 # 3. 体检某个适配器（不连网，纯静态检查）
-python -m campusfree check --school tust
+python -m campusfree check --school your-school
 
 # 4. 生成你自己学校的适配器骨架
-python -m campusfree new-school nku --name "南开大学"
+python -m campusfree new-school your-school --name "你的学校"
 #    → 生成 adapters/nku.py，照着里面的 TODO 填
 
 # 5. 填完后自检
@@ -130,7 +132,7 @@ python -m campusfree export --school nku
 
 完整图文教程：**[docs/ADAPTER_GUIDE.md](docs/ADAPTER_GUIDE.md)**
 
-**`schools` 的真实输出**：
+**`schools` 示例输出（已脱敏）**：
 
 ```
 $ python -m campusfree schools
@@ -138,17 +140,17 @@ $ python -m campusfree schools
 
 ID          学校                  节次    默认校区      教务系统
 ------------------------------------------------------------------------------------------
-tust        某高校              13    泰达        http://jwxtxs.tust.edu.cn:46110
+your-school        某高校              13    校区 A        http://jwxt.example.edu.cn:46110
 ```
 
-**`check` 的真实输出**：
+**`check` 示例输出（已脱敏）**：
 
 ```
-$ python -m campusfree check --school tust
-体检对象：某高校（tust）
-  教务系统：http://jwxtxs.tust.edu.cn:46110/student/teachingResources/freeClassroom/index
+$ python -m campusfree check --school your-school
+体检对象：某高校
+  教务系统：http://jwxt.example.edu.cn:46110/student/teachingResources/freeClassroom/index
   节次数量：13
-  默认校区：泰达
+  默认校区：校区 A
   浏览器  ：Microsoft Edge | exe=...\msedge.exe | profile=...\tust-classroom\edge-cdp-profile | port=9222
 
 [合格] 适配器契约检查全部通过，可以开爬。
@@ -161,13 +163,13 @@ $ python -m campusfree check --school tust
 | 命令 | 作用 | 需要浏览器吗 |
 |------|------|------------|
 | `python -m campusfree schools` | 列出所有已注册的学校 | 否 |
-| `python -m campusfree check --school tust` | 体检适配器是否写合格 | 否 |
-| `python -m campusfree run --school tust --range 0-6` | 爬取未来 7 天 | 是 |
-| `python -m campusfree run --school tust --auto` | 自动探测学期边界，一路爬到放假 | 是 |
-| `python -m campusfree export --school tust` | 导出静态 JSON | 否 |
+| `python -m campusfree check --school your-school` | 体检适配器是否写合格 | 否 |
+| `python -m campusfree run --school your-school --range 0-6` | 爬取未来 7 天 | 是 |
+| `python -m campusfree run --school your-school --auto` | 自动探测学期边界，一路爬到放假 | 是 |
+| `python -m campusfree export --school your-school` | 导出静态 JSON | 否 |
 | `python -m campusfree new-school <id>` | 生成新学校适配器骨架 | 否 |
 
-单个学校爬一天：`run --school tust --dayoffset 1`（1 = 明天）
+单个学校爬一天：`run --school your-school --dayoffset 1`（1 = 明天）
 
 ### 固定刷新爬取（覆盖旧数据）
 
@@ -255,7 +257,7 @@ python meta_only.py             # 写盘（每日 JSON 一概不碰）
 
 | ID | 学校 | 校区 | 节次 | 状态 |
 |----|------|------|------|------|
-| `tust` | 某高校 | 泰达 + 河西 | 13 | ✅ 官方适配器，已上线 [在线查询](https://huanweide.github.io/tust-classroom/) |
+| `your-school` | 某高校 | 校区 A + 校区 B | 13 | ✅ 官方适配器，已上线 [在线查询](https://huanweide.github.io/tust-classroom/) |
 
 **你的学校不在这？** 看下面，约 30 分钟，欢迎提 PR。
 
@@ -269,13 +271,13 @@ python meta_only.py             # 写盘（每日 JSON 一概不碰）
 from campusfree.adapter import SchoolAdapter
 from campusfree.model import Building, Campus, Room, SchoolProfile
 
-class NkuAdapter(SchoolAdapter):
+class YourSchoolAdapter(SchoolAdapter):
     @property
     def profile(self) -> SchoolProfile:
-        return SchoolProfile(school_id="nku", school_name="南开大学",
-                             base_url="https://jwxt.nku.edu.cn", period_count=13)
+        return SchoolProfile(school_id="nku", school_name="你的学校",
+                             base_url="https://jwxt.example.edu.cn", period_count=13)
 
-    def list_campuses(self, page):        return [Campus(name="八里台")]
+    def list_campuses(self, page):        return [Campus(name="校区 A")]
     def list_buildings(self, page, campus): return [Building(name="主楼")]
     def select_building(self, page, campus, building) -> bool: ...
     def list_free_rooms(self, page, period, day_offset): return [Room(...)]
@@ -283,7 +285,7 @@ class NkuAdapter(SchoolAdapter):
 
 > 铁律：适配器里**不许引入 playwright**。框架会把已登录的页面对象传进来，你只管在页面里发请求、解析结果 —— 这样适配器才能脱离浏览器做单元测试。
 
-生成器可以帮你起手：`python -m campusfree new-school nku --name "南开大学"`
+生成器可以帮你起手：`python -m campusfree new-school your-school --name "你的学校"`
 
 ---
 
@@ -294,7 +296,7 @@ class NkuAdapter(SchoolAdapter):
 - [x] 102 项单元测试（原项目为零测试）
 - [x] CI：Python 3.11 + 3.12 矩阵，ruff + pytest + CLI 冒烟 + 前端资源校验
 - [x] 导出安全闸门 + 只读体检模式
-- [ ] 招 3 个校外适配器 PR（当前仅 `tust` 一所）
+- [ ] 招 3 个校外适配器 PR（当前仅 `your-school` 一所）
 - [ ] 前端支持多学校切换
 - [ ] `static/` 模板化，新学校导出即得自己的页面
 - [ ] 数据新鲜度告警（`generated_at` 过期自动开 Issue）
@@ -308,7 +310,7 @@ class NkuAdapter(SchoolAdapter):
 | 单元测试 | 102 项全绿 | `pytest` |
 | 静态检查 | ruff 全绿 | `ruff check .` |
 | 语法编译 | 全绿 | `python -m compileall -q .` |
-| 适配器契约 | 每条命令可自检 | `python -m campusfree check --school tust` |
+| 适配器契约 | 每条命令可自检 | `python -m campusfree check --school your-school` |
 | 前端端到端 | 11 项真实浏览器点击 | `npm install && npm run e2e` |
 | **归一化回归** | 35 项 | `python test_normalize.py` |
 | **爬取运维** | 10 项 | `python test_refresh_crawl.py` |
