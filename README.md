@@ -2,6 +2,8 @@
   <img src="assets/banner.svg" alt="CampusFreeRoom">
 </p>
 
+<p align="center"><sub>English: 暂未提供（No English docs yet）</sub></p>
+
 <!-- badges -->
 [![License](https://img.shields.io/github/license/huanweide/tust-classroom)](LICENSE)
 [![CI](https://github.com/huanweide/tust-classroom/actions/workflows/ci.yml/badge.svg)](https://github.com/huanweide/tust-classroom/actions/workflows/ci.yml)
@@ -415,7 +417,7 @@ python keepalive.py --once                 # 照常可用
 
 ## 🏫 License
 
-[MIT](LICENSE) · 作者 [ReTri · huanweide](https://github.com/huanweide)
+[MIT](LICENSE) · 作者 [huanweide](https://github.com/huanweide)
 
 ---
 
