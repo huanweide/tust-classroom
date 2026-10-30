@@ -2,7 +2,7 @@
   <img src="assets/banner.svg" alt="CampusFreeRoom">
 </p>
 
-<p align="center"><sub>English: 暂未提供（No English docs yet）</sub></p>
+<p align="center"><sub>**English** · [README_EN.md](./README_EN.md)</sub></p>
 
 <!-- badges -->
 [![License](https://img.shields.io/github/license/huanweide/tust-classroom)](LICENSE)
